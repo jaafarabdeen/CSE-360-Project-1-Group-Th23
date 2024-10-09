@@ -1,4 +1,4 @@
-# CSE-360-Project-1-Group-23
+# CSE-360-Project-1-Group-Th23
 
 ## Group Members
 - Ayush Kaushik (Team Leader)
