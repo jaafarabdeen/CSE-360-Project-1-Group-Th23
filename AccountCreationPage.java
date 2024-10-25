@@ -55,6 +55,10 @@ public class AccountCreationPage {
         confirmPasswordField.setMaxWidth(600);
         confirmPasswordField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
 
+        // Level selection field
+        LevelSelectionDialog levelDialog = new LevelSelectionDialog();
+        String selectedLevel = levelDialog.showAndWait();
+
         // Message label for error messages
         Label messageLabel = new Label();
         messageLabel.setTextFill(Color.web("#ff5555"));
@@ -82,6 +86,7 @@ public class AccountCreationPage {
                 for (String role : invitation.getRoles()) {
                     newUser.addRole(role);
                 }
+                newUser.setLevel(selectedLevel);
                 LoginPage.userDatabase.put(username, newUser);
                 messageLabel.setText("Account created. Please log in.");
                 // Return to login page

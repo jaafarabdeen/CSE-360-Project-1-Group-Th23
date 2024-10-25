@@ -41,6 +41,16 @@ public class DashboardPage {
         welcomeLabel.setFont(new Font("Arial", 56));
         welcomeLabel.setTextFill(Color.web("#ffffff"));
 
+        // Help Articles button
+        Button helpArticlesButton = new Button("Help Articles");
+        helpArticlesButton.setPrefWidth(600);
+        helpArticlesButton.setPrefHeight(50);
+        helpArticlesButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        helpArticlesButton.setOnAction(e -> {
+            HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
+            helpArticlesPage.show();
+        });
+
         // Logout button
         Button logoutButton = new Button("Logout");
         logoutButton.setPrefWidth(600);
@@ -52,7 +62,7 @@ public class DashboardPage {
         });
 
         // Layout using VBox
-        VBox vBox = new VBox(40, welcomeLabel, logoutButton);
+        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, logoutButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
 

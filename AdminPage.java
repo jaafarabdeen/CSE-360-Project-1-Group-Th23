@@ -109,7 +109,8 @@ public class AdminPage {
         ContextMenu contextMenu = new ContextMenu();
         MenuItem deleteUserItem = new MenuItem("Delete User");
         MenuItem changeRoleItem = new MenuItem("Change Roles");
-        contextMenu.getItems().addAll(deleteUserItem, changeRoleItem);
+        MenuItem setLevelItem = new MenuItem("Set Level");
+        contextMenu.getItems().addAll(deleteUserItem, changeRoleItem, setLevelItem);
 
         // Set context menu on the ListView
         memberListView.setContextMenu(contextMenu);
@@ -137,6 +138,30 @@ public class AdminPage {
             }
         });
 
+        // Handle set level action
+        setLevelItem.setOnAction(e -> {
+            User selectedUser = memberListView.getSelectionModel().getSelectedItem();
+            if (selectedUser != null) {
+                LevelSelectionDialog levelDialog = new LevelSelectionDialog();
+                String selectedLevel = levelDialog.showAndWait();
+                if (selectedLevel != null) {
+                    selectedUser.setLevel(selectedLevel);
+                    // Refresh the member list
+                    memberListView.refresh();
+                }
+            }
+        });
+
+        // Help Articles Button
+        Button helpArticlesButton = new Button("Help Articles");
+        helpArticlesButton.setPrefWidth(600);
+        helpArticlesButton.setPrefHeight(50);
+        helpArticlesButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        helpArticlesButton.setOnAction(e -> {
+            HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
+            helpArticlesPage.show();
+        });
+
         // Finish Setting Up Account Button
         Button finishSetupButton = new Button("Finish Setting Up Your Account");
         finishSetupButton.setPrefWidth(600);
@@ -158,7 +183,7 @@ public class AdminPage {
         });
 
         // Layout for buttons
-        HBox buttonBox = new HBox(20, generateTokenButton, finishSetupButton, logoutButton);
+        HBox buttonBox = new HBox(20, generateTokenButton, helpArticlesButton, finishSetupButton, logoutButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         // Main layout using VBox

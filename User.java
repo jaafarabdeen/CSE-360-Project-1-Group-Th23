@@ -30,6 +30,7 @@ public class User {
     private String preferredName;
     private Map<String, String> topics; // topic -> level
     private Set<String> roles;
+    private String level; // Beginner, Intermediate, Advanced, Expert
 
     public User(String username, String password, String role) {
         this.username = username;
@@ -40,6 +41,7 @@ public class User {
         }
         this.oneTimePasswordFlag = false;
         this.topics = new HashMap<>();
+        this.level = "Intermediate"; // Default level
     }
 
     // Password hashing method using SHA-256
@@ -168,6 +170,24 @@ public class User {
 
     public String getTopicLevel(String topic) {
         return topics.getOrDefault(topic, "Intermediate");
+    }
+
+    /**
+     * Gets the user's level (Beginner, Intermediate, Advanced, Expert).
+     * 
+     * @return The user's level.
+     */
+    public String getLevel() {
+        return level;
+    }
+
+    /**
+     * Sets the user's level (Beginner, Intermediate, Advanced, Expert).
+     * 
+     * @param level The level to set.
+     */
+    public void setLevel(String level) {
+        this.level = level;
     }
 
     @Override

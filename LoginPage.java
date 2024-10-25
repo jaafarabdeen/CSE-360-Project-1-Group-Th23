@@ -87,11 +87,29 @@ public class LoginPage {
         messageLabel.setTextFill(Color.web("#ff5555"));
         messageLabel.setFont(new Font("Arial", 28));
 
+        // Event handler for the register button
+        registerButton.setOnAction(e -> {
+            String invitationCode = invitationCodeField.getText();
+            if (!invitationCode.isEmpty()) {
+                // Handle registration via invitation code
+                if (invitationTokens.containsKey(invitationCode)) {
+                    Invitation invitation = invitationTokens.get(invitationCode);
+                    invitationTokens.remove(invitationCode);
+                    // Proceed to account creation page
+                    AccountCreationPage accountCreationPage = new AccountCreationPage(stage, invitation);
+                    accountCreationPage.show();
+                } else {
+                    messageLabel.setText("Invalid invitation code.");
+                }
+            } else {
+                messageLabel.setText("Please enter an invitation code.");
+            }
+        });
+
         // Event handler for the login button
         loginButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
-            String invitationCode = invitationCodeField.getText();
 
             if (userDatabase.isEmpty()) {
                 // If no users exist, create an admin account
@@ -103,17 +121,6 @@ public class LoginPage {
                     messageLabel.setText("Admin account created. Please log in again.");
                     usernameField.clear();
                     passwordField.clear();
-                }
-            } else if (!invitationCode.isEmpty()) {
-                // Handle registration via invitation code
-                if (invitationTokens.containsKey(invitationCode)) {
-                    Invitation invitation = invitationTokens.get(invitationCode);
-                    invitationTokens.remove(invitationCode);
-                    // Proceed to account creation page
-                    AccountCreationPage accountCreationPage = new AccountCreationPage(stage, invitation);
-                    accountCreationPage.show();
-                } else {
-                    messageLabel.setText("Invalid invitation code.");
                 }
             } else if (!username.isEmpty() && !password.isEmpty()) {
                 // Handle normal login

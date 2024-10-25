@@ -8,7 +8,7 @@ import javafx.geometry.Pos;
 
 /**
  * Custom ListCell to display user information in the member list.
- * Shows the username and roles of each user.
+ * Shows the username, roles, and level of each user.
  * @author
   *     - Lewam Atnafie
  */
@@ -18,7 +18,7 @@ public class UserCell extends ListCell<User> {
         super.updateItem(user, empty);
 
         if (user != null && !empty) {
-            // Create labels for username and roles
+            // Create labels for username, roles, and level
             Label usernameLabel = new Label(user.getUsername());
             usernameLabel.setFont(new Font("Arial", 24));
             usernameLabel.setTextFill(Color.web("#ffffff"));
@@ -27,8 +27,12 @@ public class UserCell extends ListCell<User> {
             rolesLabel.setFont(new Font("Arial", 18));
             rolesLabel.setTextFill(Color.web("#a0a0a0"));
 
+            Label levelLabel = new Label("Level: " + user.getLevel());
+            levelLabel.setFont(new Font("Arial", 18));
+            levelLabel.setTextFill(Color.web("#a0a0a0"));
+
             // Layout using HBox
-            HBox hBox = new HBox(20, usernameLabel, rolesLabel);
+            HBox hBox = new HBox(20, usernameLabel, rolesLabel, levelLabel);
             hBox.setAlignment(Pos.CENTER_LEFT);
 
             setGraphic(hBox);
