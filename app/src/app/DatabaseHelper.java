@@ -11,6 +11,7 @@ import Encryption.EncryptionHelper;
 import Encryption.EncryptionUtils;
 import app.HelpArticle;
 import app.User;
+import app.Invitation;
 
 /**
  * The DatabaseHelper class provides methods to interact with the HelpArticle and User databases.
@@ -185,6 +186,26 @@ public class DatabaseHelper {
     }
 
     /**
+     * Updates an existing help article in the database.
+     *
+     * @param article The article with updated information.
+     * @throws SQLException if an error occurs during article update.
+     */
+    public void updateArticle(HelpArticle article) throws SQLException {
+        String updateQuery = "UPDATE help_articles SET title = ?, description = ?, body = ?, level = ?, keywords = ?, groups = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
+            pstmt.setString(1, article.getTitle());
+            pstmt.setString(2, article.getDescription());
+            pstmt.setString(3, article.getBody());
+            pstmt.setString(4, article.getLevel());
+            pstmt.setString(5, String.join(",", article.getKeywords()));
+            pstmt.setString(6, String.join(",", article.getGroups()));
+            pstmt.setLong(7, article.getId());
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
      * Retrieves an article by its ID.
      *
      * @param id The ID of the article.
@@ -252,6 +273,77 @@ public class DatabaseHelper {
             }
         }
         return articles;
+    }
+
+    /**
+     * Checks if an invitation exists by its token.
+     *
+     * @param token The token of the invitation.
+     * @return True if the invitation exists, false otherwise.
+     * @throws SQLException if an error occurs during the check.
+     */
+    public boolean doesInvitationExist(String token) throws SQLException {
+        String query = "SELECT COUNT(*) AS count FROM invitations WHERE token = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, token);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves an invitation by its token.
+     *
+     * @param token The token of the invitation.
+     * @return The Invitation object, or null if not found.
+     * @throws SQLException if an error occurs during invitation retrieval.
+     */
+    public Invitation getInvitation(String token) throws SQLException {
+        String query = "SELECT * FROM invitations WHERE token = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, token);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Set<String> roles = Set.of(rs.getString("roles").split(","));
+                    return new Invitation(token, roles);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Deletes an invitation by its token.
+     *
+     * @param token The token of the invitation to delete.
+     * @throws SQLException if an error occurs during invitation deletion.
+     */
+    public void deleteInvitation(String token) throws SQLException {
+        String deleteQuery = "DELETE FROM invitations WHERE token = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(deleteQuery)) {
+            pstmt.setString(1, token);
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Checks if the database is empty.
+     *
+     * @return True if the user table is empty, false otherwise.
+     * @throws SQLException if an error occurs during the check.
+     */
+    public boolean isDatabaseEmpty() throws SQLException {
+        String query = "SELECT COUNT(*) AS count FROM users";
+        try (ResultSet resultSet = statement.executeQuery(query)) {
+            if (resultSet.next()) {
+                return resultSet.getInt("count") == 0;
+            }
+        }
+        return true;
     }
 
     /**
