@@ -113,6 +113,35 @@ public class DatabaseHelper {
             pstmt.executeUpdate();
         }
     }
+    
+    /**
+     * Retrieves all users from the database.
+     *
+     * @return A collection of User objects.
+     * @throws SQLException if an error occurs during user retrieval.
+     */
+    public Collection<User> getAllUsers() throws SQLException {
+        String query = "SELECT * FROM users";
+        Collection<User> users = new ArrayList<>();
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                User user = new User(
+                        rs.getString("username"),
+                        rs.getString("password_hash"),
+                        rs.getString("roles")
+                );
+                user.setEmail(rs.getString("email"));
+                user.setFirstName(rs.getString("first_name"));
+                user.setMiddleName(rs.getString("middle_name"));
+                user.setLastName(rs.getString("last_name"));
+                user.setPreferredName(rs.getString("preferred_name"));
+                user.setLevel(rs.getString("level"));
+                users.add(user);
+            }
+        }
+        return users;
+    }
 
     /**
      * Retrieves a user by their username.
@@ -143,6 +172,42 @@ public class DatabaseHelper {
             }
         }
         return null;
+    }
+    
+    /**
+     * Updates an existing user in the database.
+     *
+     * @param user The user with updated information.
+     * @throws SQLException if an error occurs during user update.
+     */
+    public void updateUser(User user) throws SQLException {
+        String updateQuery = "UPDATE users SET password_hash = ?, email = ?, first_name = ?, middle_name = ?, last_name = ?, preferred_name = ?, roles = ?, level = ? WHERE username = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
+            pstmt.setString(1, user.getPasswordHash());
+            pstmt.setString(2, user.getEmail());
+            pstmt.setString(3, user.getFirstName());
+            pstmt.setString(4, user.getMiddleName());
+            pstmt.setString(5, user.getLastName());
+            pstmt.setString(6, user.getPreferredName());
+            pstmt.setString(7, String.join(",", user.getRoles()));
+            pstmt.setString(8, user.getLevel());
+            pstmt.setString(9, user.getUsername());
+            pstmt.executeUpdate();
+        }
+    }
+    
+    /**
+     * Deletes a user by their username.
+     *
+     * @param username The username of the user to delete.
+     * @throws SQLException if an error occurs during user deletion.
+     */
+    public void deleteUser(String username) throws SQLException {
+        String deleteQuery = "DELETE FROM users WHERE username = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(deleteQuery)) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+        }
     }
 
     /**
@@ -273,6 +338,21 @@ public class DatabaseHelper {
             }
         }
         return articles;
+    }
+    
+    /**
+     * Registers a new invitation in the database.
+     *
+     * @param invitation The invitation to be registered.
+     * @throws SQLException if an error occurs during invitation insertion.
+     */
+    public void registerInvitation(Invitation invitation) throws SQLException {
+        String insertInvitation = "INSERT INTO invitations (token, roles) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertInvitation)) {
+            pstmt.setString(1, invitation.getToken());
+            pstmt.setString(2, String.join(",", invitation.getRoles()));
+            pstmt.executeUpdate();
+        }
     }
 
     /**
