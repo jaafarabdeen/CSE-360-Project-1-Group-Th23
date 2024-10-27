@@ -1,4 +1,5 @@
-// UserCell.java
+package app;
+
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.control.Label;

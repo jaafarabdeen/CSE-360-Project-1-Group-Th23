@@ -5,6 +5,8 @@
 *.jar
 *.war
 *.ear
+javafx-sdk-23.0.1/
+/bin/
 
 # Maven files
 target/

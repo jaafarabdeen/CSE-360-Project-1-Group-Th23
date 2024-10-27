@@ -1,4 +1,5 @@
-// RoleSelectionDialog.java
+package app;
+
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;

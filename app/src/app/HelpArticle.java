@@ -1,4 +1,5 @@
-// HelpArticle.java
+package app;
+
 import java.util.Set;
 import java.util.HashSet;
 

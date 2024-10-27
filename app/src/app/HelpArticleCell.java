@@ -1,4 +1,5 @@
-// HelpArticleCell.java
+package app;
+
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;

@@ -1,4 +1,5 @@
-// Invitation.java
+package app;
+
 import java.util.Set;
 
 /**

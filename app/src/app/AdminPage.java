@@ -1,4 +1,5 @@
-// AdminPage.java
+package app;
+
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
