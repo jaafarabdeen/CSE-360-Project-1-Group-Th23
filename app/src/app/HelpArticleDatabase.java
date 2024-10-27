@@ -1,18 +1,27 @@
 package app;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Collection;
+import app.DatabaseHelper;
+import java.sql.SQLException;
 
 /**
- * The HelpArticleDatabase class serves as an in-memory database for help articles.
+ * The HelpArticleDatabase class serves as a database interface for help articles.
  * It provides methods to add, retrieve, update, and delete articles.
  * 
  * Author:
  *     - Jaafar Abdeen
  */
 public class HelpArticleDatabase {
-    private static Map<Long, HelpArticle> articles = new HashMap<>();
+    private static DatabaseHelper databaseHelper;
+
+    static {
+        try {
+            databaseHelper = new DatabaseHelper();
+            databaseHelper.connectToDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Adds a new article to the database.
@@ -20,7 +29,11 @@ public class HelpArticleDatabase {
      * @param article The article to add.
      */
     public static void addArticle(HelpArticle article) {
-        articles.put(article.getId(), article);
+        try {
+            databaseHelper.registerArticle(article);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -30,7 +43,12 @@ public class HelpArticleDatabase {
      * @return The HelpArticle object, or null if not found.
      */
     public static HelpArticle getArticle(long id) {
-        return articles.get(id);
+        try {
+            return databaseHelper.getArticle(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -39,7 +57,11 @@ public class HelpArticleDatabase {
      * @param id The ID of the article to remove.
      */
     public static void removeArticle(long id) {
-        articles.remove(id);
+        try {
+            databaseHelper.deleteArticle(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -48,7 +70,11 @@ public class HelpArticleDatabase {
      * @param article The article with updated information.
      */
     public static void updateArticle(HelpArticle article) {
-        articles.put(article.getId(), article);
+        try {
+            databaseHelper.updateArticle(article);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -57,6 +83,11 @@ public class HelpArticleDatabase {
      * @return A collection of all help articles.
      */
     public static Collection<HelpArticle> getArticles() {
-        return articles.values();
+        try {
+            return databaseHelper.getAllArticles();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -12,17 +12,22 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDateTime;
+import Encryption.EncryptionUtils;
+import Encryption.EncryptionHelper;
+import app.DatabaseHelper;
+import java.util.Base64;
 
 /**
  * The LoginPage class represents the login screen of the application.
  * Users can log in with their username and password or use an invitation code to register.
  * It also provides functionalities for the admin to manage users.
  * 
- * User data is stored in a HashMap, mapping usernames to User objects.
- * Invitation codes are also stored in a HashMap for validation purposes.
+ * User data is stored in the database.
+ * Invitation codes are also stored in a database table for validation purposes.
  * 
  * @author
  *     - Pragya Kumari
@@ -30,18 +35,18 @@ import java.time.LocalDateTime;
  */
 public class LoginPage {
     private Stage stage;
-    /**
-     * The user database storing username and User object pairs.
-     */
-    public static Map<String, User> userDatabase = new HashMap<>();
-
-    /**
-     * The invitation code database storing codes and Invitation objects.
-     */
-    public static Map<String, Invitation> invitationTokens = new HashMap<>();
+    private DatabaseHelper databaseHelper;
+    private EncryptionHelper encryptionHelper;
 
     public LoginPage(Stage stage) {
         this.stage = stage;
+        try {
+            this.databaseHelper = new DatabaseHelper();
+            this.encryptionHelper = new EncryptionHelper();
+            this.databaseHelper.connectToDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -93,14 +98,18 @@ public class LoginPage {
             String invitationCode = invitationCodeField.getText();
             if (!invitationCode.isEmpty()) {
                 // Handle registration via invitation code
-                if (invitationTokens.containsKey(invitationCode)) {
-                    Invitation invitation = invitationTokens.get(invitationCode);
-                    invitationTokens.remove(invitationCode);
-                    // Proceed to account creation page
-                    AccountCreationPage accountCreationPage = new AccountCreationPage(stage, invitation);
-                    accountCreationPage.show();
-                } else {
-                    messageLabel.setText("Invalid invitation code.");
+                try {
+                    if (databaseHelper.doesInvitationExist(invitationCode)) {
+                        Invitation invitation = databaseHelper.getInvitation(invitationCode);
+                        databaseHelper.deleteInvitation(invitationCode);
+                        // Proceed to account creation page
+                        AccountCreationPage accountCreationPage = new AccountCreationPage(stage, invitation);
+                        accountCreationPage.show();
+                    } else {
+                        messageLabel.setText("Invalid invitation code.");
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             } else {
                 messageLabel.setText("Please enter an invitation code.");
@@ -112,61 +121,52 @@ public class LoginPage {
             String username = usernameField.getText();
             String password = passwordField.getText();
 
-            if (userDatabase.isEmpty()) {
-                // If no users exist, create an admin account
-                if (username.isEmpty() || password.isEmpty()) {
-                    messageLabel.setText("Please enter a username and password.");
-                } else {
-                    User adminUser = new User(username, password, "Admin");
-                    userDatabase.put(username, adminUser);
-                    messageLabel.setText("Admin account created. Please log in again.");
-                    usernameField.clear();
-                    passwordField.clear();
-                }
-            } else if (!username.isEmpty() && !password.isEmpty()) {
-                // Handle normal login
-                if (userDatabase.containsKey(username)) {
-                    User user = userDatabase.get(username);
-                    if (user.isOneTimePassword()) {
-                        // Check if one-time password is still valid
-                        if (LocalDateTime.now().isAfter(user.getOneTimePasswordExpiry())) {
-                            messageLabel.setText("One-time password has expired.");
-                        } else if (user.checkPassword(password)) {
-                            // Proceed to reset password
-                            ResetPasswordPage resetPasswordPage = new ResetPasswordPage(stage, user);
-                            resetPasswordPage.show();
-                        } else {
-                            messageLabel.setText("Invalid one-time password.");
-                        }
-                    } else if (user.checkPassword(password)) {
-                        // Check if user has completed account setup
-                        if (user.getEmail() == null || user.getFirstName() == null) {
-                            // Proceed to finish setting up account
-                            FinishSettingUpAccountPage finishPage = new FinishSettingUpAccountPage(stage, user);
-                            finishPage.show();
-                        } else if (user.getRoles().size() > 1) {
-                            // Proceed to role selection page
-                            RoleSelectionPage roleSelectionPage = new RoleSelectionPage(stage, user);
-                            roleSelectionPage.show();
-                        } else {
-                            // Proceed to home page based on role
-                            String role = user.getRoles().iterator().next();
-                            if (role.equals("Admin")) {
-                                AdminPage adminPage = new AdminPage(stage, user);
-                                adminPage.show();
+            try {
+                if (databaseHelper.isDatabaseEmpty()) {
+                    // If no users exist, create an admin account
+                    if (username.isEmpty() || password.isEmpty()) {
+                        messageLabel.setText("Please enter a username and password.");
+                    } else {
+                        User adminUser = new User(username, password, "Admin");
+                        databaseHelper.registerUser(adminUser);
+                        messageLabel.setText("Admin account created. Please log in again.");
+                        usernameField.clear();
+                        passwordField.clear();
+                    }
+                } else if (!username.isEmpty() && !password.isEmpty()) {
+                    // Handle normal login
+                    if (databaseHelper.doesUserExist(username)) {
+                        User user = databaseHelper.getUser(username);
+                        byte[] encryptedPassword = encryptionHelper.encrypt(password.getBytes(), EncryptionUtils.getInitializationVector(username.toCharArray()));
+                        if (user.getPasswordHash().equals(Base64.getEncoder().encodeToString(encryptedPassword))) {
+                            // Proceed to appropriate page based on role
+                            if (user.getEmail() == null || user.getFirstName() == null) {
+                                FinishSettingUpAccountPage finishPage = new FinishSettingUpAccountPage(stage, user);
+                                finishPage.show();
+                            } else if (user.getRoles().size() > 1) {
+                                RoleSelectionPage roleSelectionPage = new RoleSelectionPage(stage, user);
+                                roleSelectionPage.show();
                             } else {
-                                DashboardPage dashboardPage = new DashboardPage(stage, user);
-                                dashboardPage.show();
+                                String role = user.getRoles().iterator().next();
+                                if (role.equals("Admin")) {
+                                    AdminPage adminPage = new AdminPage(stage, user);
+                                    adminPage.show();
+                                } else {
+                                    DashboardPage dashboardPage = new DashboardPage(stage, user);
+                                    dashboardPage.show();
+                                }
                             }
+                        } else {
+                            messageLabel.setText("Incorrect password.");
                         }
                     } else {
-                        messageLabel.setText("Incorrect password.");
+                        messageLabel.setText("User not found.");
                     }
                 } else {
-                    messageLabel.setText("User not found.");
+                    messageLabel.setText("Please enter your username and password or invitation code.");
                 }
-            } else {
-                messageLabel.setText("Please enter your username and password or invitation code.");
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         });
 

@@ -1,5 +1,6 @@
 package app;
 
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.HashMap;
@@ -75,6 +76,15 @@ public class User {
      */
     public void setPassword(String password) {
         this.passwordHash = hashPassword(password);
+    }
+
+    /**
+     * Returns the password hash as a Base64-encoded string.
+     * 
+     * @return The password hash as a string.
+     */
+    public String getPasswordHash() {
+        return Base64.getEncoder().encodeToString(passwordHash);
     }
 
     // Getters and setters for other fields
