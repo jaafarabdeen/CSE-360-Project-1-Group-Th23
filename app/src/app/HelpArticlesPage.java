@@ -1,5 +1,6 @@
 package app;
 
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -17,6 +18,10 @@ import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,10 +38,17 @@ import java.util.stream.Collectors;
 public class HelpArticlesPage {
     private Stage stage;
     private User user;
+    private DatabaseHelper databaseHelper;
 
     public HelpArticlesPage(Stage stage, User user) {
         this.stage = stage;
         this.user = user;
+        try {
+            this.databaseHelper = new DatabaseHelper();
+            this.databaseHelper.connectToDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -72,6 +84,43 @@ public class HelpArticlesPage {
 
         // Define how each article is displayed
         articlesListView.setCellFactory(param -> new HelpArticleCell());
+        
+     // Backup and Restore buttons
+        Button backupButton = new Button("Backup Articles");
+        backupButton.setPrefWidth(600);
+        backupButton.setPrefHeight(50);
+        backupButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        backupButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Backup File Location");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                try {
+                    databaseHelper.backupArticles(file.getAbsolutePath());
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        Button restoreButton = new Button("Restore Articles");
+        restoreButton.setPrefWidth(600);
+        restoreButton.setPrefHeight(50);
+        restoreButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        restoreButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Backup File");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+            File file = fileChooser.showOpenDialog(stage);
+            if (file != null) {
+                try {
+                    databaseHelper.restoreArticles(file.getAbsolutePath());
+                } catch (IOException | SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
 
         // Context menu for admins and instructors
         if (user.hasRole("Admin") || user.hasRole("Instructor")) {
@@ -140,7 +189,7 @@ public class HelpArticlesPage {
         // Layout using VBox
         VBox vBox;
         if (user.hasRole("Admin") || user.hasRole("Instructor")) {
-            vBox = new VBox(20, titleLabel, searchField, createArticleButton, articlesListView, backButton);
+            vBox = new VBox(20, titleLabel, searchField, createArticleButton, backupButton, restoreButton, articlesListView, backButton);
         } else {
             vBox = new VBox(20, titleLabel, searchField, articlesListView, backButton);
         }

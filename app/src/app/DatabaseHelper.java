@@ -1,6 +1,10 @@
 package app;
 
 import java.sql.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -348,6 +352,62 @@ public class DatabaseHelper {
             }
         }
         return articles;
+    }
+    
+    /**
+     * Backs up articles to a specified backup file.
+     *
+     * @param fileName The name of the backup file.
+     * @throws SQLException if an error occurs during article backup.
+     * @throws IOException  if an error occurs during file writing.
+     */
+    public void backupArticles(String fileName) throws SQLException, IOException {
+        String query = "SELECT * FROM help_articles";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query);
+             FileWriter writer = new FileWriter(fileName)) {
+
+            while (rs.next()) {
+                writer.write(rs.getString("title") + "," + rs.getString("description") + "," +
+                             rs.getString("body") + "," + rs.getString("level") + "," +
+                             rs.getString("keywords") + "," + rs.getString("groups") + "," +
+                             rs.getString("author_username") + "\n");
+            }
+        }
+    }
+
+    /**
+     * Restores articles from a specified backup file.
+     *
+     * @param fileName The name of the backup file.
+     * @throws SQLException if an error occurs during article restoration.
+     * @throws IOException  if an error occurs during file reading.
+     */
+    public void restoreArticles(String fileName) throws SQLException, IOException {
+        String clearQuery = "DELETE FROM help_articles";
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate(clearQuery);
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] articleData = line.split(",");
+                if (articleData.length != 7) continue;
+
+                String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, author_username) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
+                    pstmt.setString(1, articleData[0]);
+                    pstmt.setString(2, articleData[1]);
+                    pstmt.setString(3, articleData[2]);
+                    pstmt.setString(4, articleData[3]);
+                    pstmt.setString(5, articleData[4]);
+                    pstmt.setString(6, articleData[5]);
+                    pstmt.setString(7, articleData[6]);
+                    pstmt.executeUpdate();
+                }
+            }
+        }
     }
     
     /**
