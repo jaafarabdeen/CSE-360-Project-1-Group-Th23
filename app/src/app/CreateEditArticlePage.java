@@ -5,7 +5,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
@@ -21,6 +20,8 @@ import java.util.Set;
  * 
  * Author:
  *     - Ayush Kaushik
+ *     - Pragya Kumari
+ *     - Aaryan Gaur
  */
 public class CreateEditArticlePage {
     private Stage stage;
@@ -80,6 +81,13 @@ public class CreateEditArticlePage {
         groupsField.setMaxWidth(800);
         groupsField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
 
+        // Reference Links field
+        TextArea referenceLinksArea = new TextArea();
+        referenceLinksArea.setPromptText("REFERENCE LINKS (comma-separated)");
+        referenceLinksArea.setMaxWidth(800);
+        referenceLinksArea.setMaxHeight(100);
+        referenceLinksArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+
         // Message label for error messages
         Label messageLabel = new Label();
         messageLabel.setTextFill(Color.web("#ff5555"));
@@ -93,6 +101,8 @@ public class CreateEditArticlePage {
             keywordsField.setText(String.join(", ", article.getKeywords()));
             levelField.setText(article.getLevel());
             groupsField.setText(String.join(", ", article.getGroups()));
+            // Assuming the HelpArticle class has a method to get reference links
+            referenceLinksArea.setText(String.join(", ", article.getReferenceLinks())); // Added for reference links
         }
 
         // Save button
@@ -107,6 +117,7 @@ public class CreateEditArticlePage {
             String keywordsText = keywordsField.getText();
             String level = levelField.getText();
             String groupsText = groupsField.getText();
+            String referenceLinksText = referenceLinksArea.getText(); // Collect reference links
 
             if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level.isEmpty()) {
                 messageLabel.setText("Please fill in the required fields.");
@@ -121,9 +132,14 @@ public class CreateEditArticlePage {
                     groups.add(group.trim());
                 }
 
+                Set<String> referenceLinks = new HashSet<>();
+                for (String link : referenceLinksText.split(",")) {
+                    referenceLinks.add(link.trim()); // Collecting reference links
+                }
+
                 if (article == null) {
                     // Create new article
-                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, groups, user.getUsername());
+                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, groups, referenceLinks, user.getUsername());
                     HelpArticleDatabase.addArticle(newArticle);
                 } else {
                     // Update existing article
@@ -133,6 +149,7 @@ public class CreateEditArticlePage {
                     article.setLevel(level);
                     article.setKeywords(keywords);
                     article.setGroups(groups);
+                    article.setReferenceLinks(referenceLinks); // Update reference links
                     HelpArticleDatabase.updateArticle(article);
                 }
 
@@ -143,7 +160,7 @@ public class CreateEditArticlePage {
         });
 
         // Layout using VBox
-        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, saveButton, messageLabel);
+        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, referenceLinksArea, saveButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
         vBox.setStyle("-fx-background-color: #3b5998;");
