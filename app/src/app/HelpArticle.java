@@ -22,38 +22,41 @@ public class HelpArticle {
     private Set<String> keywords;
     private Set<String> groups;
     private String authorUsername;
+    private Set<String> referenceLinks;
 
-    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
+    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, Set<String> referenceLinks, String authorUsername) {
         this.title = title;
         this.description = description;
         this.body = body;
         this.level = level;
         this.keywords = keywords;
         this.groups = groups;
+        this.referenceLinks = referenceLinks; // Initialize reference links
         this.authorUsername = authorUsername;
     }
     
-    // for fetching
-    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
+    // For fetching
+    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, Set<String> referenceLinks, String authorUsername) {
         this.id = id;
-    	this.title = title;
+        this.title = title;
         this.description = description;
         this.body = body;
         this.level = level;
         this.keywords = keywords;
         this.groups = groups;
+        this.referenceLinks = referenceLinks; // Initialize reference links
         this.authorUsername = authorUsername;
     }
     
     public void setId(long id) {
-    	this.id = id;
-		try {
-			DatabaseHelper databaseHelper = new DatabaseHelper();
-			databaseHelper.connectToDatabase();
-			databaseHelper.updateArticle(this);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        this.id = id;
+        try {
+            DatabaseHelper databaseHelper = new DatabaseHelper();
+            databaseHelper.connectToDatabase();
+            databaseHelper.updateArticle(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // Getters and setters for all fields
@@ -111,5 +114,14 @@ public class HelpArticle {
 
     public String getAuthorUsername() {
         return authorUsername;
+    }
+
+    // Getter and Setter for referenceLinks
+    public Set<String> getReferenceLinks() {
+        return referenceLinks;
+    }
+
+    public void setReferenceLinks(Set<String> referenceLinks) {
+        this.referenceLinks = referenceLinks;
     }
 }
