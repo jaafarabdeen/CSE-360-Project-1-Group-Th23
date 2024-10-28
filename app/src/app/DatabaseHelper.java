@@ -102,7 +102,7 @@ public class DatabaseHelper {
         String insertUser = "INSERT INTO users (username, password_hash, email, first_name, middle_name, last_name, preferred_name, roles, level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
             pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPasswordHash());
+            pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getEmail());
             pstmt.setString(4, user.getFirstName());
             pstmt.setString(5, user.getMiddleName());
@@ -183,7 +183,7 @@ public class DatabaseHelper {
     public void updateUser(User user) throws SQLException {
         String updateQuery = "UPDATE users SET password_hash = ?, email = ?, first_name = ?, middle_name = ?, last_name = ?, preferred_name = ?, roles = ?, level = ? WHERE username = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
-            pstmt.setString(1, user.getPasswordHash());
+            pstmt.setString(1, user.getPassword());
             pstmt.setString(2, user.getEmail());
             pstmt.setString(3, user.getFirstName());
             pstmt.setString(4, user.getMiddleName());

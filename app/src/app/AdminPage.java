@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.sql.SQLException;
 
 /**
  * The AdminPage class represents the admin dashboard where the admin can manage users.
@@ -34,10 +35,17 @@ import java.util.Comparator;
 public class AdminPage {
     private Stage stage;
     private User user;
+    private DatabaseHelper databaseHelper;
 
     public AdminPage(Stage stage, User user) {
         this.stage = stage;
         this.user = user;
+        try {
+            this.databaseHelper = new DatabaseHelper();
+            this.databaseHelper.connectToDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -61,10 +69,14 @@ public class AdminPage {
             if (!selectedRoles.isEmpty()) {
                 String token = UUID.randomUUID().toString();
                 Invitation invitation = new Invitation(token, selectedRoles);
-                LoginPage.invitationTokens.put(token, invitation);
-                // Display the token
-                TokenDisplayDialog tokenDialog = new TokenDisplayDialog(token);
-                tokenDialog.showAndWait();
+                try {
+                    databaseHelper.registerInvitation(invitation);
+                    // Display the token
+                    TokenDisplayDialog tokenDialog = new TokenDisplayDialog(token);
+                    tokenDialog.showAndWait();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
 
@@ -79,28 +91,33 @@ public class AdminPage {
         memberListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         // Populate the member list
-        ArrayList<User> userList = new ArrayList<>(LoginPage.userDatabase.values());
-        // Sort users by role: Admin > Instructor > Student
-        userList.sort(new Comparator<User>() {
-            @Override
-            public int compare(User u1, User u2) {
-                return getRolePriority(u1) - getRolePriority(u2);
-            }
-
-            private int getRolePriority(User user) {
-                if (user.hasRole("Admin")) {
-                    return 1;
-                } else if (user.hasRole("Instructor")) {
-                    return 2;
-                } else {
-                    return 3; // Student or others
+        ArrayList<User> userList;
+        try {
+            userList = new ArrayList<>(databaseHelper.getAllUsers());
+            // Sort users by role: Admin > Instructor > Student
+            userList.sort(new Comparator<User>() {
+                @Override
+                public int compare(User u1, User u2) {
+                    return getRolePriority(u1) - getRolePriority(u2);
                 }
-            }
-        });
 
-        // Add users to the ListView
-        for (User user : userList) {
-            memberListView.getItems().add(user);
+                private int getRolePriority(User user) {
+                    if (user.hasRole("Admin")) {
+                        return 1;
+                    } else if (user.hasRole("Instructor")) {
+                        return 2;
+                    } else {
+                        return 3; // Student or others
+                    }
+                }
+            });
+
+            // Add users to the ListView
+            for (User user : userList) {
+                memberListView.getItems().add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         // Define how each user is displayed
@@ -120,8 +137,12 @@ public class AdminPage {
         deleteUserItem.setOnAction(e -> {
             User selectedUser = memberListView.getSelectionModel().getSelectedItem();
             if (selectedUser != null && !selectedUser.getUsername().equals(user.getUsername())) {
-                LoginPage.userDatabase.remove(selectedUser.getUsername());
-                memberListView.getItems().remove(selectedUser);
+                try {
+                    databaseHelper.deleteUser(selectedUser.getUsername());
+                    memberListView.getItems().remove(selectedUser);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
 
@@ -133,8 +154,13 @@ public class AdminPage {
                 Set<String> selectedRoles = roleDialog.showAndWait();
                 if (!selectedRoles.isEmpty()) {
                     selectedUser.setRoles(selectedRoles);
-                    // Refresh the member list
-                    memberListView.refresh();
+                    try {
+                        databaseHelper.updateUser(selectedUser);
+                        // Refresh the member list
+                        memberListView.refresh();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
@@ -147,8 +173,13 @@ public class AdminPage {
                 String selectedLevel = levelDialog.showAndWait();
                 if (selectedLevel != null) {
                     selectedUser.setLevel(selectedLevel);
-                    // Refresh the member list
-                    memberListView.refresh();
+                    try {
+                        databaseHelper.updateUser(selectedUser);
+                        // Refresh the member list
+                        memberListView.refresh();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         });

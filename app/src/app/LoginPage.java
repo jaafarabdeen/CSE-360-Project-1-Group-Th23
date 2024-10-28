@@ -13,12 +13,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.time.LocalDateTime;
 import Encryption.EncryptionUtils;
 import Encryption.EncryptionHelper;
-import app.DatabaseHelper;
 import java.util.Base64;
 
 /**
@@ -120,6 +116,7 @@ public class LoginPage {
         loginButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
+            String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
 
             try {
                 if (databaseHelper.isDatabaseEmpty()) {
@@ -127,7 +124,7 @@ public class LoginPage {
                     if (username.isEmpty() || password.isEmpty()) {
                         messageLabel.setText("Please enter a username and password.");
                     } else {
-                        User adminUser = new User(username, password, "Admin");
+                        User adminUser = new User(username, hashedPassword, "Admin");
                         databaseHelper.registerUser(adminUser);
                         messageLabel.setText("Admin account created. Please log in again.");
                         usernameField.clear();
@@ -137,12 +134,19 @@ public class LoginPage {
                     // Handle normal login
                     if (databaseHelper.doesUserExist(username)) {
                         User user = databaseHelper.getUser(username);
-                        byte[] encryptedPassword = encryptionHelper.encrypt(password.getBytes(), EncryptionUtils.getInitializationVector(username.toCharArray()));
-                        if (user.getPasswordHash().equals(Base64.getEncoder().encodeToString(encryptedPassword))) {
+                        if (hashedPassword.equals(user.getPassword())) {
                             // Proceed to appropriate page based on role
                             if (user.getEmail() == null || user.getFirstName() == null) {
                                 FinishSettingUpAccountPage finishPage = new FinishSettingUpAccountPage(stage, user);
                                 finishPage.show();
+                                // After setting up, update user in the database
+                                finishPage.setOnFinishSetup(() -> {
+                                    try {
+                                        databaseHelper.updateUser(user); // Persist user details to the database
+                                    } catch (SQLException ex) {
+                                        ex.printStackTrace();
+                                    }
+                                });
                             } else if (user.getRoles().size() > 1) {
                                 RoleSelectionPage roleSelectionPage = new RoleSelectionPage(stage, user);
                                 roleSelectionPage.show();

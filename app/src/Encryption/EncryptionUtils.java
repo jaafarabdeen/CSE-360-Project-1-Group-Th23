@@ -3,6 +3,8 @@ package Encryption;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class EncryptionUtils {
@@ -36,4 +38,15 @@ public class EncryptionUtils {
 			System.out.print(c);
 		}
 	}
+	
+	public static byte[] hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return digest.digest(password.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            // Handle exception
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
