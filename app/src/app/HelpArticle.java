@@ -1,6 +1,7 @@
 package app;
 
 import java.util.Set;
+import java.sql.SQLException;
 import java.util.HashSet;
 
 /**
@@ -13,7 +14,6 @@ import java.util.HashSet;
  *     - Ayush Kaushik
  */
 public class HelpArticle {
-    private static long idCounter = 0;
     private long id;
     private String title;
     private String description;
@@ -24,7 +24,6 @@ public class HelpArticle {
     private String authorUsername;
 
     public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
-        this.id = ++idCounter;
         this.title = title;
         this.description = description;
         this.body = body;
@@ -32,6 +31,29 @@ public class HelpArticle {
         this.keywords = keywords;
         this.groups = groups;
         this.authorUsername = authorUsername;
+    }
+    
+    // for fetching
+    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
+        this.id = id;
+    	this.title = title;
+        this.description = description;
+        this.body = body;
+        this.level = level;
+        this.keywords = keywords;
+        this.groups = groups;
+        this.authorUsername = authorUsername;
+    }
+    
+    public void setId(long id) {
+    	this.id = id;
+		try {
+			DatabaseHelper databaseHelper = new DatabaseHelper();
+			databaseHelper.connectToDatabase();
+			databaseHelper.updateArticle(this);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 
     // Getters and setters for all fields
