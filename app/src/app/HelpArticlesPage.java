@@ -84,43 +84,51 @@ public class HelpArticlesPage {
 
         // Define how each article is displayed
         articlesListView.setCellFactory(param -> new HelpArticleCell());
-        
-     // Backup and Restore buttons
+
+        // Backup button
         Button backupButton = new Button("Backup Articles");
-        backupButton.setPrefWidth(600);
+        backupButton.setPrefWidth(300);
         backupButton.setPrefHeight(50);
-        backupButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        backupButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;");
         backupButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File Location");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+
+            // Set the default filename
+            String defaultFileName = "Backup-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH"));
+            fileChooser.setInitialFileName(defaultFileName);
+
             File file = fileChooser.showSaveDialog(stage);
             if (file != null) {
                 try {
                     databaseHelper.backupArticles(file.getAbsolutePath());
-                } catch (IOException | SQLException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         });
 
+        // Restore button
         Button restoreButton = new Button("Restore Articles");
-        restoreButton.setPrefWidth(600);
+        restoreButton.setPrefWidth(300);
         restoreButton.setPrefHeight(50);
-        restoreButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        restoreButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;");
         restoreButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
                 try {
                     databaseHelper.restoreArticles(file.getAbsolutePath());
-                } catch (IOException | SQLException ex) {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         });
+
+        // Organize buttons in an HBox for compact layout
+        HBox buttonBox = new HBox(20, backupButton, restoreButton);
+        buttonBox.setAlignment(Pos.CENTER);
 
         // Context menu for admins and instructors
         if (user.hasRole("Admin") || user.hasRole("Instructor")) {
@@ -163,9 +171,9 @@ public class HelpArticlesPage {
 
         // Create Article button for admins and instructors
         Button createArticleButton = new Button("Create Article");
-        createArticleButton.setPrefWidth(600);
+        createArticleButton.setPrefWidth(300);
         createArticleButton.setPrefHeight(50);
-        createArticleButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        createArticleButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;");
         createArticleButton.setOnAction(e -> {
             CreateEditArticlePage createPage = new CreateEditArticlePage(stage, user, null);
             createPage.show();
@@ -175,7 +183,7 @@ public class HelpArticlesPage {
         Button backButton = new Button("Back");
         backButton.setPrefWidth(300);
         backButton.setPrefHeight(50);
-        backButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
+        backButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 18;");
         backButton.setOnAction(e -> {
             if (user.hasRole("Admin")) {
                 AdminPage adminPage = new AdminPage(stage, user);
@@ -189,7 +197,7 @@ public class HelpArticlesPage {
         // Layout using VBox
         VBox vBox;
         if (user.hasRole("Admin") || user.hasRole("Instructor")) {
-            vBox = new VBox(20, titleLabel, searchField, createArticleButton, backupButton, restoreButton, articlesListView, backButton);
+            vBox = new VBox(20, titleLabel, searchField, createArticleButton, buttonBox, articlesListView, backButton);
         } else {
             vBox = new VBox(20, titleLabel, searchField, articlesListView, backButton);
         }

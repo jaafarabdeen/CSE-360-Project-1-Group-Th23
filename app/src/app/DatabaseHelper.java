@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -361,17 +362,30 @@ public class DatabaseHelper {
      * @throws SQLException if an error occurs during article backup.
      * @throws IOException  if an error occurs during file writing.
      */
-    public void backupArticles(String fileName) throws SQLException, IOException {
+    public void backupArticles(String fileName) throws SQLException, IOException, Exception {
         String query = "SELECT * FROM help_articles";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query);
              FileWriter writer = new FileWriter(fileName)) {
 
             while (rs.next()) {
-                writer.write(rs.getString("title") + "," + rs.getString("description") + "," +
-                             rs.getString("body") + "," + rs.getString("level") + "," +
-                             rs.getString("keywords") + "," + rs.getString("groups") + "," +
-                             rs.getString("author_username") + "\n");
+                String articleData = rs.getString("title") + "," + rs.getString("description") + "," +
+                                     rs.getString("body") + "," + rs.getString("level") + "," +
+                                     rs.getString("keywords") + "," + rs.getString("groups") + "," +
+                                     rs.getString("author_username");
+
+                // Generate a random IV
+                byte[] iv = new byte[16];
+                SecureRandom random = new SecureRandom();
+                random.nextBytes(iv);
+
+                // Encrypt the article data with the random IV
+                byte[] encryptedData = encryptionHelper.encrypt(articleData.getBytes(StandardCharsets.UTF_8), iv);
+
+                // Encode IV and encrypted data to Base64 and store them in the backup file
+                String encodedIv = Base64.getEncoder().encodeToString(iv);
+                String encodedData = Base64.getEncoder().encodeToString(encryptedData);
+                writer.write(encodedIv + "," + encodedData + "\n");
             }
         }
     }
@@ -383,7 +397,7 @@ public class DatabaseHelper {
      * @throws SQLException if an error occurs during article restoration.
      * @throws IOException  if an error occurs during file reading.
      */
-    public void restoreArticles(String fileName) throws SQLException, IOException {
+    public void restoreArticles(String fileName) throws SQLException, IOException, Exception {
         String clearQuery = "DELETE FROM help_articles";
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(clearQuery);
@@ -392,18 +406,29 @@ public class DatabaseHelper {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] articleData = line.split(",");
-                if (articleData.length != 7) continue;
+                String[] parts = line.split(",", 2); // Separate IV and encrypted data
+                if (parts.length != 2) continue;
+
+                byte[] iv = Base64.getDecoder().decode(parts[0]);
+                byte[] encryptedData = Base64.getDecoder().decode(parts[1]);
+
+                // Decrypt article data using the extracted IV
+                byte[] decryptedData = encryptionHelper.decrypt(encryptedData, iv);
+
+                String articleData = new String(decryptedData, StandardCharsets.UTF_8);
+                String[] fields = articleData.split(",", 7); // Split into exactly 7 parts
+
+                if (fields.length != 7) continue; // Skip malformed entries
 
                 String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, author_username) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
-                    pstmt.setString(1, articleData[0]);
-                    pstmt.setString(2, articleData[1]);
-                    pstmt.setString(3, articleData[2]);
-                    pstmt.setString(4, articleData[3]);
-                    pstmt.setString(5, articleData[4]);
-                    pstmt.setString(6, articleData[5]);
-                    pstmt.setString(7, articleData[6]);
+                    pstmt.setString(1, fields[0]);
+                    pstmt.setString(2, fields[1]);
+                    pstmt.setString(3, fields[2]);
+                    pstmt.setString(4, fields[3]);
+                    pstmt.setString(5, fields[4]);
+                    pstmt.setString(6, fields[5]);
+                    pstmt.setString(7, fields[6]);
                     pstmt.executeUpdate();
                 }
             }
