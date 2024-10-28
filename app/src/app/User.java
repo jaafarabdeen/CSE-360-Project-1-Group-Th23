@@ -1,5 +1,6 @@
 package app;
 
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.Arrays;
 public class User {
     private String email;
     private String username;
-    private byte[] passwordHash;
+    private String password;
     private boolean oneTimePasswordFlag;
     private LocalDateTime oneTimePasswordExpiry;
     private String firstName;
@@ -35,7 +36,7 @@ public class User {
 
     public User(String username, String password, String role) {
         this.username = username;
-        this.passwordHash = hashPassword(password);
+        this.password = password;
         this.roles = new HashSet<>();
         if (!role.isEmpty()) {
             this.roles.add(role);
@@ -45,36 +46,22 @@ public class User {
         this.level = "Intermediate"; // Default level
     }
 
-    // Password hashing method using SHA-256
-    private byte[] hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return digest.digest(password.getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            // Handle exception
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Checks if the provided password matches the stored password hash.
-     * 
-     * @param password The password to check.
-     * @return True if the password matches, false otherwise.
-     */
-    public boolean checkPassword(String password) {
-        byte[] hash = hashPassword(password);
-        return Arrays.equals(this.passwordHash, hash);
-    }
-
     /**
      * Sets a new password for the user.
      * 
      * @param password The new password.
      */
     public void setPassword(String password) {
-        this.passwordHash = hashPassword(password);
+        this.password = password;
+    }
+
+    /**
+     * Returns the hashed password.
+     * 
+     * @return The hashed password as a string.
+     */
+    public String getPassword() {
+        return this.password;
     }
 
     // Getters and setters for other fields

@@ -11,6 +11,10 @@ import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+import java.sql.SQLException;
+import java.util.Base64;
+
+import Encryption.EncryptionUtils;
 
 /**
  * The AccountCreationPage class allows new users to create an account using an invitation code.
@@ -24,10 +28,17 @@ import javafx.geometry.Insets;
 public class AccountCreationPage {
     private Stage stage;
     private Invitation invitation;
+    private DatabaseHelper databaseHelper;
 
     public AccountCreationPage(Stage stage, Invitation invitation) {
         this.stage = stage;
         this.invitation = invitation;
+        try {
+            this.databaseHelper = new DatabaseHelper();
+            this.databaseHelper.connectToDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -74,25 +85,31 @@ public class AccountCreationPage {
             String username = usernameField.getText();
             String password = passwordField.getText();
             String confirmPassword = confirmPasswordField.getText();
-
-            if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                messageLabel.setText("Please fill in all fields.");
-            } else if (!password.equals(confirmPassword)) {
-                messageLabel.setText("Passwords do not match.");
-            } else if (LoginPage.userDatabase.containsKey(username)) {
-                messageLabel.setText("Username already exists.");
-            } else {
-                // Create new user account
-                User newUser = new User(username, password, "");
-                for (String role : invitation.getRoles()) {
-                    newUser.addRole(role);
+            String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
+            
+            try {
+                if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+                    messageLabel.setText("Please fill in all fields.");
+                } else if (!password.equals(confirmPassword)) {
+                    messageLabel.setText("Passwords do not match.");
+                } else if (databaseHelper.doesUserExist(username)) {
+                    messageLabel.setText("Username already exists.");
+                } else {
+                    // Create new user account
+                    User newUser = new User(username, hashedPassword, "");
+                    for (String role : invitation.getRoles()) {
+                        newUser.addRole(role);
+                    }
+                    newUser.setLevel(selectedLevel);
+                    databaseHelper.registerUser(newUser);
+                    messageLabel.setText("Account created. Please log in.");
+                    // Return to login page
+                    LoginPage loginPage = new LoginPage(stage);
+                    loginPage.show();
                 }
-                newUser.setLevel(selectedLevel);
-                LoginPage.userDatabase.put(username, newUser);
-                messageLabel.setText("Account created. Please log in.");
-                // Return to login page
-                LoginPage loginPage = new LoginPage(stage);
-                loginPage.show();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                messageLabel.setText("An error occurred. Please try again.");
             }
         });
 

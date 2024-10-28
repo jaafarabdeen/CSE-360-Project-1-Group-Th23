@@ -22,10 +22,15 @@ import javafx.geometry.Insets;
 public class FinishSettingUpAccountPage {
     private Stage stage;
     private User user;
+    private Runnable onFinishSetup;
 
     public FinishSettingUpAccountPage(Stage stage, User user) {
         this.stage = stage;
         this.user = user;
+    }
+
+    public void setOnFinishSetup(Runnable onFinishSetup) {
+        this.onFinishSetup = onFinishSetup;
     }
 
     /**
@@ -92,6 +97,10 @@ public class FinishSettingUpAccountPage {
                 user.setMiddleName(middleName);
                 user.setLastName(lastName);
                 user.setPreferredName(preferredName);
+
+                if (onFinishSetup != null) {
+                    onFinishSetup.run();
+                }
 
                 // Proceed to role selection or home page
                 if (user.getRoles().size() > 1) {
