@@ -236,9 +236,10 @@ public class DatabaseHelper {
      * @param article The article to be registered.
      * @throws Exception if an error occurs during article insertion.
      */
-    public void registerArticle(HelpArticle article) throws Exception {
+    public void registerArticle(HelpArticle article) throws SQLException {
         String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, author_username) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(insertArticle, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, article.getTitle());
             pstmt.setString(2, article.getDescription());
             pstmt.setString(3, article.getBody());
@@ -247,6 +248,14 @@ public class DatabaseHelper {
             pstmt.setString(6, String.join(",", article.getGroups()));
             pstmt.setString(7, article.getAuthorUsername());
             pstmt.executeUpdate();
+            
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) { // Use pstmt.getGeneratedKeys() instead of statement.getGeneratedKeys()
+                if (generatedKeys.next()) {
+                    article.setId(generatedKeys.getLong(1)); // Set the id from the generated keys
+                } else {
+                    throw new SQLException("Creating help article failed, no ID obtained.");
+                }
+            }
         }
     }
 
@@ -326,6 +335,7 @@ public class DatabaseHelper {
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 HelpArticle article = new HelpArticle(
+                		rs.getLong("id"),
                         rs.getString("title"),
                         rs.getString("description"),
                         rs.getString("body"),
