@@ -49,6 +49,11 @@ public class ViewArticlePage {
         Label titleLabel = new Label(article.getTitle());
         titleLabel.setFont(new Font("Arial", 56));
         titleLabel.setStyle(labelStyle);
+        
+        // Title label
+        Label levelLabel = new Label(article.getLevel());
+        levelLabel.setFont(new Font("Arial", 45));
+        levelLabel.setStyle(labelStyle);
 
         // Description label
         Label descriptionLabel = new Label(article.getDescription());
@@ -92,7 +97,7 @@ public class ViewArticlePage {
         backButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
 
         // Layout using VBox
-        VBox vBox = new VBox(20, titleLabel, descriptionLabel, bodyArea, linksBox, backButton);
+        VBox vBox = new VBox(20, levelLabel, titleLabel, descriptionLabel, bodyArea, linksBox, backButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
         vBox.setStyle("-fx-background-color: #3b5998;");
