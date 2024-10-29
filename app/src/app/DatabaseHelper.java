@@ -21,6 +21,9 @@ import app.Invitation;
 /**
  * The DatabaseHelper class provides methods to interact with the HelpArticle and User databases.
  * It allows connecting to the database, adding, viewing, deleting articles, users, and handling backups.
+ *  
+ * Author:
+ *     - Jaafar Abdeen
  */
 public class DatabaseHelper {
 

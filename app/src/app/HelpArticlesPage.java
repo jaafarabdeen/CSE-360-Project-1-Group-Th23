@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * 
  * Author:
  *     - Ayush Kaushik
+ *     - Jaafar Abdeen
  */
 public class HelpArticlesPage {
     private final Stage stage;
