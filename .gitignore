@@ -37,3 +37,4 @@ out/
 # macOS system files
 .DS_Store
 /.metadata/
+*.db

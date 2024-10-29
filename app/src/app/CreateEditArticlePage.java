@@ -19,7 +19,10 @@ import java.util.Set;
  * Users can enter all the necessary fields and save the article to the database.
  * 
  * Author:
+ *     - Jaafar Abdeen
  *     - Ayush Kaushik
+ *     - Pragya Kumari
+ *     - Aaryan Gaur
  */
 public class CreateEditArticlePage {
     private final Stage stage;
@@ -79,6 +82,13 @@ public class CreateEditArticlePage {
         groupsField.setMaxWidth(800);
         groupsField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
 
+        // Reference Links field
+        TextArea referenceLinksArea = new TextArea();
+        referenceLinksArea.setPromptText("REFERENCE LINKS (comma-separated)");
+        referenceLinksArea.setMaxWidth(800);
+        referenceLinksArea.setMaxHeight(100);
+        referenceLinksArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+
         // Message label for error messages
         Label messageLabel = new Label();
         messageLabel.setTextFill(Color.web("#ff5555"));
@@ -92,6 +102,7 @@ public class CreateEditArticlePage {
             keywordsField.setText(String.join(", ", article.getKeywords()));
             levelField.setText(article.getLevel());
             groupsField.setText(String.join(", ", article.getGroups()));
+            referenceLinksArea.setText(String.join(", ", article.getReferenceLinks()));
         }
 
         // Save button
@@ -110,10 +121,11 @@ public class CreateEditArticlePage {
             } else {
                 Set<String> keywords = parseInputToSet(keywordsField.getText());
                 Set<String> groups = parseInputToSet(groupsField.getText());
+                Set<String> referenceLinks = parseInputToSet(referenceLinksArea.getText());
 
                 if (article == null) {
                     // Create new article
-                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, groups, user.getUsername());
+                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, groups, referenceLinks, user.getUsername());
                     HelpArticleDatabase.addArticle(newArticle);
                 } else {
                     // Update existing article
@@ -123,6 +135,7 @@ public class CreateEditArticlePage {
                     article.setLevel(level);
                     article.setKeywords(keywords);
                     article.setGroups(groups);
+                    article.setReferenceLinks(referenceLinks);
                     HelpArticleDatabase.updateArticle(article);
                 }
 
@@ -132,7 +145,7 @@ public class CreateEditArticlePage {
         });
 
         // Layout using VBox
-        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, saveButton, messageLabel);
+        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, referenceLinksArea, saveButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
         vBox.setStyle("-fx-background-color: #3b5998;");

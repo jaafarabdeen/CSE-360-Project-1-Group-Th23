@@ -22,13 +22,14 @@ public class HelpArticle {
     private Set<String> keywords = new HashSet<>();
     private Set<String> groups = new HashSet<>();
     private final String authorUsername;
+    private Set<String> referenceLinks;
 
-    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
-        this(0, title, description, body, level, keywords, groups, authorUsername);
+    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, Set<String> referenceLinks, String authorUsername) {
+        this(0, title, description, body, level, keywords, groups, referenceLinks, authorUsername);
     }
     
     // Constructor for fetching existing article with ID
-    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
+    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, Set<String> referenceLinks, String authorUsername) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -36,6 +37,7 @@ public class HelpArticle {
         this.level = level;
         this.keywords = (keywords != null) ? keywords : new HashSet<>();
         this.groups = (groups != null) ? groups : new HashSet<>();
+        this.referenceLinks = referenceLinks != null ? referenceLinks : new HashSet<>();
         this.authorUsername = authorUsername;
     }
     
@@ -95,6 +97,14 @@ public class HelpArticle {
 
     public void setGroups(Set<String> groups) {
         this.groups = (groups != null) ? groups : new HashSet<>();
+    }
+    
+    public Set<String> getReferenceLinks() {
+        return referenceLinks;
+    }
+    
+    public void setReferenceLinks(Set<String> referenceLinks) {
+        this.referenceLinks = referenceLinks;
     }
 
     public String getAuthorUsername() {
