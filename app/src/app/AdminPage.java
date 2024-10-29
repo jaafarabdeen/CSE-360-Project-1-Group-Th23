@@ -33,19 +33,21 @@ import java.sql.SQLException;
  *     - Jaafar Abdeen
  */
 public class AdminPage {
-    private Stage stage;
-    private User user;
-    private DatabaseHelper databaseHelper;
+    private final Stage stage;
+    private final User user;
+    private final DatabaseHelper databaseHelper;
 
     public AdminPage(Stage stage, User user) {
         this.stage = stage;
         this.user = user;
+        DatabaseHelper tempDatabaseHelper = null;
         try {
-            this.databaseHelper = new DatabaseHelper();
-            this.databaseHelper.connectToDatabase();
+            tempDatabaseHelper = new DatabaseHelper();
+            tempDatabaseHelper.connectToDatabase();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.databaseHelper = tempDatabaseHelper;
     }
 
     /**
@@ -71,9 +73,7 @@ public class AdminPage {
                 Invitation invitation = new Invitation(token, selectedRoles);
                 try {
                     databaseHelper.registerInvitation(invitation);
-                    // Display the token
-                    TokenDisplayDialog tokenDialog = new TokenDisplayDialog(token);
-                    tokenDialog.showAndWait();
+                    new TokenDisplayDialog(token).showAndWait();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -90,37 +90,16 @@ public class AdminPage {
         memberListView.setPrefSize(600, 600);
         memberListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-        // Populate the member list
-        ArrayList<User> userList;
+        // Populate and sort the member list
         try {
-            userList = new ArrayList<>(databaseHelper.getAllUsers());
-            // Sort users by role: Admin > Instructor > Student
-            userList.sort(new Comparator<User>() {
-                @Override
-                public int compare(User u1, User u2) {
-                    return getRolePriority(u1) - getRolePriority(u2);
-                }
-
-                private int getRolePriority(User user) {
-                    if (user.hasRole("Admin")) {
-                        return 1;
-                    } else if (user.hasRole("Instructor")) {
-                        return 2;
-                    } else {
-                        return 3; // Student or others
-                    }
-                }
-            });
-
-            // Add users to the ListView
-            for (User user : userList) {
-                memberListView.getItems().add(user);
-            }
+            ArrayList<User> userList = new ArrayList<>(databaseHelper.getAllUsers());
+            userList.sort(Comparator.comparingInt(this::getRolePriority));
+            memberListView.getItems().addAll(userList);
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        // Define how each user is displayed
+        // Define display style for each user
         memberListView.setCellFactory(param -> new UserCell());
 
         // Context menu for user actions
@@ -129,11 +108,10 @@ public class AdminPage {
         MenuItem changeRoleItem = new MenuItem("Change Roles");
         MenuItem setLevelItem = new MenuItem("Set Level");
         contextMenu.getItems().addAll(deleteUserItem, changeRoleItem, setLevelItem);
-
         // Set context menu on the ListView
         memberListView.setContextMenu(contextMenu);
 
-        // Handle delete user action
+        // Delete user action
         deleteUserItem.setOnAction(e -> {
             User selectedUser = memberListView.getSelectionModel().getSelectedItem();
             if (selectedUser != null && !selectedUser.getUsername().equals(user.getUsername())) {
@@ -146,7 +124,7 @@ public class AdminPage {
             }
         });
 
-        // Handle change role action
+        // Change role action
         changeRoleItem.setOnAction(e -> {
             User selectedUser = memberListView.getSelectionModel().getSelectedItem();
             if (selectedUser != null) {
@@ -165,7 +143,7 @@ public class AdminPage {
             }
         });
 
-        // Handle set level action
+        // Set level action
         setLevelItem.setOnAction(e -> {
             User selectedUser = memberListView.getSelectionModel().getSelectedItem();
             if (selectedUser != null) {
@@ -184,14 +162,13 @@ public class AdminPage {
             }
         });
 
-        // Help Articles Button
+        // Additional Buttons
         Button helpArticlesButton = new Button("Help Articles");
         helpArticlesButton.setPrefWidth(600);
         helpArticlesButton.setPrefHeight(50);
         helpArticlesButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
         helpArticlesButton.setOnAction(e -> {
-            HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
-            helpArticlesPage.show();
+            new HelpArticlesPage(stage, user).show();
         });
 
         // Finish Setting Up Account Button
@@ -200,8 +177,7 @@ public class AdminPage {
         finishSetupButton.setPrefHeight(50);
         finishSetupButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
         finishSetupButton.setOnAction(e -> {
-            FinishSettingUpAccountPage finishPage = new FinishSettingUpAccountPage(stage, user);
-            finishPage.show();
+            new FinishSettingUpAccountPage(stage, user).show();
         });
 
         // Logout Button
@@ -210,8 +186,7 @@ public class AdminPage {
         logoutButton.setPrefHeight(50);
         logoutButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
         logoutButton.setOnAction(e -> {
-            LoginPage loginPage = new LoginPage(stage);
-            loginPage.show();
+            new LoginPage(stage).show();
         });
 
         // Layout for buttons
@@ -233,5 +208,11 @@ public class AdminPage {
         stage.setTitle("Admin Page");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private int getRolePriority(User user) {
+        if (user.hasRole("Admin")) return 1;
+        else if (user.hasRole("Instructor")) return 2;
+        return 3; // Student or other
     }
 }

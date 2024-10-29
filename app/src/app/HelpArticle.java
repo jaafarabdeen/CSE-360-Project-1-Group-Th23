@@ -1,7 +1,6 @@
 package app;
 
 import java.util.Set;
-import java.sql.SQLException;
 import java.util.HashSet;
 
 /**
@@ -19,41 +18,29 @@ public class HelpArticle {
     private String description;
     private String body;
     private String level; // Beginner, Intermediate, Advanced, Expert
-    private Set<String> keywords;
-    private Set<String> groups;
-    private String authorUsername;
+    private Set<String> keywords = new HashSet<>();
+    private Set<String> groups = new HashSet<>();
+    private final String authorUsername;
 
     public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
+        this(0, title, description, body, level, keywords, groups, authorUsername);
+    }
+    
+    // Constructor for fetching existing article with ID
+    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.body = body;
         this.level = level;
-        this.keywords = keywords;
-        this.groups = groups;
+        this.keywords = (keywords != null) ? keywords : new HashSet<>();
+        this.groups = (groups != null) ? groups : new HashSet<>();
         this.authorUsername = authorUsername;
     }
     
-    // for fetching
-    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, String authorUsername) {
-        this.id = id;
-    	this.title = title;
-        this.description = description;
-        this.body = body;
-        this.level = level;
-        this.keywords = keywords;
-        this.groups = groups;
-        this.authorUsername = authorUsername;
-    }
-    
+    // Setters for all fields except immutable fields like authorUsername
     public void setId(long id) {
-    	this.id = id;
-		try {
-			DatabaseHelper databaseHelper = new DatabaseHelper();
-			databaseHelper.connectToDatabase();
-			databaseHelper.updateArticle(this);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        this.id = id;
     }
 
     // Getters and setters for all fields
@@ -98,7 +85,7 @@ public class HelpArticle {
     }
 
     public void setKeywords(Set<String> keywords) {
-        this.keywords = keywords;
+        this.keywords = (keywords != null) ? keywords : new HashSet<>();
     }
 
     public Set<String> getGroups() {
@@ -106,7 +93,7 @@ public class HelpArticle {
     }
 
     public void setGroups(Set<String> groups) {
-        this.groups = groups;
+        this.groups = (groups != null) ? groups : new HashSet<>();
     }
 
     public String getAuthorUsername() {

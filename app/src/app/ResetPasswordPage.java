@@ -10,6 +10,8 @@ import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+import Encryption.EncryptionUtils;
+import java.util.Base64;
 
 /**
  * The ResetPasswordPage class allows users to reset their password using a one-time password.
@@ -20,8 +22,8 @@ import javafx.geometry.Insets;
  *     - Jaafar Abdeen
  */
 public class ResetPasswordPage {
-    private Stage stage;
-    private User user;
+    private final Stage stage;
+    private final User user;
 
     public ResetPasswordPage(Stage stage, User user) {
         this.stage = stage;
@@ -32,6 +34,9 @@ public class ResetPasswordPage {
      * Displays the reset password UI and handles user interactions.
      */
     public void show() {
+        String buttonStyle = "-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;";
+        String fieldStyle = "-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;";
+
         // Title label
         Label titleLabel = new Label("Reset Your Password");
         titleLabel.setFont(new Font("Arial", 56));
@@ -41,12 +46,12 @@ public class ResetPasswordPage {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("NEW PASSWORD");
         passwordField.setMaxWidth(600);
-        passwordField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        passwordField.setStyle(fieldStyle);
 
         PasswordField confirmPasswordField = new PasswordField();
         confirmPasswordField.setPromptText("CONFIRM PASSWORD");
         confirmPasswordField.setMaxWidth(600);
-        confirmPasswordField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        confirmPasswordField.setStyle(fieldStyle);
 
         // Message label for error messages
         Label messageLabel = new Label();
@@ -54,11 +59,7 @@ public class ResetPasswordPage {
         messageLabel.setFont(new Font("Arial", 28));
 
         // Save button
-        Button saveButton = new Button("Save");
-        saveButton.setPrefWidth(600);
-        saveButton.setPrefHeight(50);
-        saveButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        saveButton.setOnAction(e -> {
+        Button saveButton = createButton("Save", buttonStyle, e -> {
             String password = passwordField.getText();
             String confirmPassword = confirmPasswordField.getText();
 
@@ -67,12 +68,13 @@ public class ResetPasswordPage {
             } else if (!password.equals(confirmPassword)) {
                 messageLabel.setText("Passwords do not match.");
             } else {
-                user.setPassword(password);
+                String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
+                user.setPassword(hashedPassword);
                 user.setOneTimePassword(false);
                 user.setOneTimePasswordExpiry(null);
+
                 // Return to login page
-                LoginPage loginPage = new LoginPage(stage);
-                loginPage.show();
+                new LoginPage(stage).show();
             }
         });
 
@@ -87,5 +89,14 @@ public class ResetPasswordPage {
         stage.setTitle("Reset Password");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private Button createButton(String text, String style, javafx.event.EventHandler<javafx.event.ActionEvent> action) {
+        Button button = new Button(text);
+        button.setPrefWidth(600);
+        button.setPrefHeight(50);
+        button.setStyle(style);
+        button.setOnAction(action);
+        return button;
     }
 }

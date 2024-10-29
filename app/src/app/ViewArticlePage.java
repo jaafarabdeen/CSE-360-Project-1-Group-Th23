@@ -19,9 +19,9 @@ import javafx.geometry.Insets;
  *     - Ayush Kaushik
  */
 public class ViewArticlePage {
-    private Stage stage;
-    private User user;
-    private HelpArticle article;
+    private final Stage stage;
+    private final User user;
+    private final HelpArticle article;
 
     public ViewArticlePage(Stage stage, User user, HelpArticle article) {
         this.stage = stage;
@@ -33,15 +33,18 @@ public class ViewArticlePage {
      * Displays the article details UI.
      */
     public void show() {
+        String labelStyle = "-fx-text-fill: #ffffff;";
+        String buttonStyle = "-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;";
+
         // Title label
         Label titleLabel = new Label(article.getTitle());
         titleLabel.setFont(new Font("Arial", 56));
-        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.setStyle(labelStyle);
 
         // Description label
         Label descriptionLabel = new Label(article.getDescription());
         descriptionLabel.setFont(new Font("Arial", 28));
-        descriptionLabel.setTextFill(Color.web("#ffffff"));
+        descriptionLabel.setStyle(labelStyle);
 
         // Body area
         TextArea bodyArea = new TextArea(article.getBody());
@@ -55,11 +58,8 @@ public class ViewArticlePage {
         Button backButton = new Button("Back");
         backButton.setPrefWidth(300);
         backButton.setPrefHeight(50);
-        backButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
-        backButton.setOnAction(e -> {
-            HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
-            helpArticlesPage.show();
-        });
+        backButton.setStyle(buttonStyle);
+        backButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
 
         // Layout using VBox
         VBox vBox = new VBox(20, titleLabel, descriptionLabel, bodyArea, backButton);

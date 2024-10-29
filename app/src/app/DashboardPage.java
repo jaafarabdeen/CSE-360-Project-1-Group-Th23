@@ -25,8 +25,8 @@ import javafx.geometry.Insets;
  *     - Jaafar Abdeen
  */
 public class DashboardPage {
-    private Stage stage;
-    private User user;
+    private final Stage stage;
+    private final User user;
 
     public DashboardPage(Stage stage, User user) {
         this.stage = stage;
@@ -37,8 +37,11 @@ public class DashboardPage {
      * Displays the dashboard UI and handles user interactions.
      */
     public void show() {
+        String buttonStyle = "-fx-text-fill: white; -fx-font-size: 24;";
+        String welcomeText = "Welcome to the Dashboard, " + user.getPreferredName() + "!";
+
         // Welcome label with user's preferred name
-        Label welcomeLabel = new Label("Welcome to the Dashboard, " + user.getPreferredName() + "!");
+        Label welcomeLabel = new Label(welcomeText);
         welcomeLabel.setFont(new Font("Arial", 56));
         welcomeLabel.setTextFill(Color.web("#ffffff"));
 
@@ -46,21 +49,15 @@ public class DashboardPage {
         Button helpArticlesButton = new Button("Help Articles");
         helpArticlesButton.setPrefWidth(600);
         helpArticlesButton.setPrefHeight(50);
-        helpArticlesButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        helpArticlesButton.setOnAction(e -> {
-            HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
-            helpArticlesPage.show();
-        });
+        helpArticlesButton.setStyle("-fx-background-color: #5865F2; " + buttonStyle);
+        helpArticlesButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
 
         // Logout button
         Button logoutButton = new Button("Logout");
         logoutButton.setPrefWidth(600);
         logoutButton.setPrefHeight(50);
-        logoutButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
-        logoutButton.setOnAction(e -> {
-            LoginPage loginPage = new LoginPage(stage);
-            loginPage.show();
-        });
+        logoutButton.setStyle("-fx-background-color: #FF5555; " + buttonStyle);
+        logoutButton.setOnAction(e -> new LoginPage(stage).show());
 
         // Layout using VBox
         VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, logoutButton);

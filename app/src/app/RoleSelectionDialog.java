@@ -39,6 +39,7 @@ public class RoleSelectionDialog {
         ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
+        Set<String> emptySet = new HashSet<>(); // Define an empty set to return if no roles are selected
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == okButtonType) {
                 Set<String> roles = new HashSet<>();
@@ -50,9 +51,9 @@ public class RoleSelectionDialog {
                 }
                 return roles;
             }
-            return new HashSet<>();
+            return emptySet;
         });
 
-        return dialog.showAndWait().orElse(new HashSet<>());
+        return dialog.showAndWait().orElse(emptySet);
     }
 }

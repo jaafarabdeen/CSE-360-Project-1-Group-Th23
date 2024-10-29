@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
@@ -20,11 +19,8 @@ import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 
 import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -33,28 +29,34 @@ import java.util.stream.Collectors;
  * Students can view articles based on their level.
  * 
  * Author:
- *     -Ayush Kaushik
+ *     - Ayush Kaushik
  */
 public class HelpArticlesPage {
-    private Stage stage;
-    private User user;
-    private DatabaseHelper databaseHelper;
+    private final Stage stage;
+    private final User user;
+    private final DatabaseHelper databaseHelper;
+    private final List<HelpArticle> allArticles;
 
     public HelpArticlesPage(Stage stage, User user) {
         this.stage = stage;
         this.user = user;
+        DatabaseHelper tempDatabaseHelper = null;
         try {
-            this.databaseHelper = new DatabaseHelper();
-            this.databaseHelper.connectToDatabase();
+            tempDatabaseHelper = new DatabaseHelper();
+            tempDatabaseHelper.connectToDatabase();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.databaseHelper = tempDatabaseHelper;
+        this.allArticles = new ArrayList<>(HelpArticleDatabase.getArticles());
     }
 
     /**
      * Displays the help articles UI and handles user interactions.
      */
     public void show() {
+        String buttonStyle = "-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;";
+        
         // Title label
         Label titleLabel = new Label("Help Articles");
         titleLabel.setFont(new Font("Arial", 56));
@@ -70,34 +72,21 @@ public class HelpArticlesPage {
         ListView<HelpArticle> articlesListView = new ListView<>();
         articlesListView.setPrefSize(800, 600);
         articlesListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-
-        // Load articles based on user level and search keywords
-        List<HelpArticle> allArticles = new ArrayList<>(HelpArticleDatabase.getArticles());
-        List<HelpArticle> filteredArticles = filterArticles(allArticles, searchField.getText());
-        articlesListView.getItems().addAll(filteredArticles);
-
-        // Update articles when search text changes
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            articlesListView.getItems().clear();
-            articlesListView.getItems().addAll(filterArticles(allArticles, newValue));
-        });
-
-        // Define how each article is displayed
         articlesListView.setCellFactory(param -> new HelpArticleCell());
 
+        // Load initial filtered articles
+        articlesListView.getItems().setAll(filterArticles(searchField.getText()));
+
+        // Update articles on search field change
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> 
+            articlesListView.getItems().setAll(filterArticles(newValue))
+        );
+
         // Backup button
-        Button backupButton = new Button("Backup Articles");
-        backupButton.setPrefWidth(300);
-        backupButton.setPrefHeight(50);
-        backupButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;");
-        backupButton.setOnAction(e -> {
+        Button backupButton = createButton("Backup Articles", 300, 50, buttonStyle, e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File Location");
-
-            // Set the default filename
-            String defaultFileName = "Backup-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH"));
-            fileChooser.setInitialFileName(defaultFileName);
-
+            fileChooser.setInitialFileName("Backup-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH")));
             File file = fileChooser.showSaveDialog(stage);
             if (file != null) {
                 try {
@@ -109,53 +98,32 @@ public class HelpArticlesPage {
         });
 
         // Restore button
-        Button restoreButton = new Button("Restore Articles");
-        restoreButton.setPrefWidth(300);
-        restoreButton.setPrefHeight(50);
-        restoreButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;");
-        restoreButton.setOnAction(e -> {
+        Button restoreButton = createButton("Restore Articles", 300, 50, buttonStyle, e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File");
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
                 try {
                     databaseHelper.restoreArticles(file.getAbsolutePath());
+                    // Reload articles from the database after restore
+                    allArticles.clear();
+                    allArticles.addAll(HelpArticleDatabase.getArticles());
+                    // Refresh ListView with the updated articles
+                    articlesListView.getItems().setAll(filterArticles(searchField.getText()));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         });
 
-        // Organize buttons in an HBox for compact layout
+        // Organize backup and restore buttons in an HBox
         HBox buttonBox = new HBox(20, backupButton, restoreButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         // Context menu for admins and instructors
         if (user.hasRole("Admin") || user.hasRole("Instructor")) {
-            ContextMenu contextMenu = new ContextMenu();
-            MenuItem editArticleItem = new MenuItem("Edit Article");
-            MenuItem deleteArticleItem = new MenuItem("Delete Article");
-            contextMenu.getItems().addAll(editArticleItem, deleteArticleItem);
-
+            ContextMenu contextMenu = createContextMenu(articlesListView);
             articlesListView.setContextMenu(contextMenu);
-
-            // Handle edit article action
-            editArticleItem.setOnAction(e -> {
-                HelpArticle selectedArticle = articlesListView.getSelectionModel().getSelectedItem();
-                if (selectedArticle != null) {
-                    CreateEditArticlePage editPage = new CreateEditArticlePage(stage, user, selectedArticle);
-                    editPage.show();
-                }
-            });
-
-            // Handle delete article action
-            deleteArticleItem.setOnAction(e -> {
-                HelpArticle selectedArticle = articlesListView.getSelectionModel().getSelectedItem();
-                if (selectedArticle != null) {
-                    HelpArticleDatabase.removeArticle(selectedArticle.getId());
-                    articlesListView.getItems().remove(selectedArticle);
-                }
-            });
         }
 
         // Double-click to view article details
@@ -163,34 +131,22 @@ public class HelpArticlesPage {
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
                 HelpArticle selectedArticle = articlesListView.getSelectionModel().getSelectedItem();
                 if (selectedArticle != null) {
-                    ViewArticlePage viewPage = new ViewArticlePage(stage, user, selectedArticle);
-                    viewPage.show();
+                    new ViewArticlePage(stage, user, selectedArticle).show();
                 }
             }
         });
 
         // Create Article button for admins and instructors
-        Button createArticleButton = new Button("Create Article");
-        createArticleButton.setPrefWidth(300);
-        createArticleButton.setPrefHeight(50);
-        createArticleButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;");
-        createArticleButton.setOnAction(e -> {
-            CreateEditArticlePage createPage = new CreateEditArticlePage(stage, user, null);
-            createPage.show();
-        });
+        Button createArticleButton = createButton("Create Article", 300, 50, buttonStyle, e -> 
+            new CreateEditArticlePage(stage, user, null).show()
+        );
 
         // Back button
-        Button backButton = new Button("Back");
-        backButton.setPrefWidth(300);
-        backButton.setPrefHeight(50);
-        backButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 18;");
-        backButton.setOnAction(e -> {
+        Button backButton = createButton("Back", 300, 50, "-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 18;", e -> {
             if (user.hasRole("Admin")) {
-                AdminPage adminPage = new AdminPage(stage, user);
-                adminPage.show();
+                new AdminPage(stage, user).show();
             } else {
-                DashboardPage dashboardPage = new DashboardPage(stage, user);
-                dashboardPage.show();
+                new DashboardPage(stage, user).show();
             }
         });
 
@@ -215,16 +171,49 @@ public class HelpArticlesPage {
     /**
      * Filters articles based on user level and search keywords.
      * 
-     * @param articles The list of all articles.
      * @param keyword The search keyword.
      * @return The list of filtered articles.
      */
-    private List<HelpArticle> filterArticles(List<HelpArticle> articles, String keyword) {
-        return articles.stream()
+    private List<HelpArticle> filterArticles(String keyword) {
+        return allArticles.stream()
                 .filter(article -> article.getLevel().equalsIgnoreCase(user.getLevel()) || user.hasRole("Admin") || user.hasRole("Instructor"))
-                .filter(article -> keyword == null || keyword.isEmpty() || article.getTitle().toLowerCase().contains(keyword.toLowerCase())
-                        || article.getDescription().toLowerCase().contains(keyword.toLowerCase())
-                        || article.getKeywords().stream().anyMatch(k -> k.toLowerCase().contains(keyword.toLowerCase())))
+                .filter(article -> keyword == null || keyword.isEmpty() ||
+                        article.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                        article.getDescription().toLowerCase().contains(keyword.toLowerCase()) ||
+                        article.getKeywords().stream().anyMatch(k -> k.toLowerCase().contains(keyword.toLowerCase())))
                 .collect(Collectors.toList());
+    }
+
+    private Button createButton(String text, int width, int height, String style, javafx.event.EventHandler<javafx.event.ActionEvent> action) {
+        Button button = new Button(text);
+        button.setPrefWidth(width);
+        button.setPrefHeight(height);
+        button.setStyle(style);
+        button.setOnAction(action);
+        return button;
+    }
+
+    private ContextMenu createContextMenu(ListView<HelpArticle> articlesListView) {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem editArticleItem = new MenuItem("Edit Article");
+        MenuItem deleteArticleItem = new MenuItem("Delete Article");
+        contextMenu.getItems().addAll(editArticleItem, deleteArticleItem);
+
+        editArticleItem.setOnAction(e -> {
+            HelpArticle selectedArticle = articlesListView.getSelectionModel().getSelectedItem();
+            if (selectedArticle != null) {
+                new CreateEditArticlePage(stage, user, selectedArticle).show();
+            }
+        });
+
+        deleteArticleItem.setOnAction(e -> {
+            HelpArticle selectedArticle = articlesListView.getSelectionModel().getSelectedItem();
+            if (selectedArticle != null) {
+                HelpArticleDatabase.removeArticle(selectedArticle.getId());
+                articlesListView.getItems().remove(selectedArticle);
+            }
+        });
+
+        return contextMenu;
     }
 }

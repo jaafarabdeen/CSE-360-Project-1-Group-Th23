@@ -5,7 +5,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
@@ -23,9 +22,9 @@ import java.util.Set;
  *     - Ayush Kaushik
  */
 public class CreateEditArticlePage {
-    private Stage stage;
-    private User user;
-    private HelpArticle article; // null if creating a new article
+    private final Stage stage;
+    private final User user;
+    private final HelpArticle article; // null if creating a new article
 
     public CreateEditArticlePage(Stage stage, User user, HelpArticle article) {
         this.stage = stage;
@@ -104,22 +103,13 @@ public class CreateEditArticlePage {
             String title = titleField.getText();
             String description = descriptionArea.getText();
             String body = bodyArea.getText();
-            String keywordsText = keywordsField.getText();
             String level = levelField.getText();
-            String groupsText = groupsField.getText();
 
             if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level.isEmpty()) {
                 messageLabel.setText("Please fill in the required fields.");
             } else {
-                Set<String> keywords = new HashSet<>();
-                for (String keyword : keywordsText.split(",")) {
-                    keywords.add(keyword.trim());
-                }
-
-                Set<String> groups = new HashSet<>();
-                for (String group : groupsText.split(",")) {
-                    groups.add(group.trim());
-                }
+                Set<String> keywords = parseInputToSet(keywordsField.getText());
+                Set<String> groups = parseInputToSet(groupsField.getText());
 
                 if (article == null) {
                     // Create new article
@@ -137,8 +127,7 @@ public class CreateEditArticlePage {
                 }
 
                 // Return to help articles page
-                HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
-                helpArticlesPage.show();
+                new HelpArticlesPage(stage, user).show();
             }
         });
 
@@ -153,5 +142,13 @@ public class CreateEditArticlePage {
         stage.setTitle(article == null ? "Create Article" : "Edit Article");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private Set<String> parseInputToSet(String input) {
+        Set<String> result = new HashSet<>();
+        for (String item : input.split(",")) {
+            result.add(item.trim());
+        }
+        return result;
     }
 }

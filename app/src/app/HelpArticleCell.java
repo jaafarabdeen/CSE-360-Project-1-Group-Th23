@@ -15,24 +15,32 @@ import javafx.geometry.Pos;
  *     - Ayush Kaushik
  */
 public class HelpArticleCell extends ListCell<HelpArticle> {
+    private final Label titleLabel;
+    private final Label descriptionLabel;
+    private final VBox vBox;
+
+    public HelpArticleCell() {
+        // Initialize labels and layout only once
+        titleLabel = new Label();
+        titleLabel.setFont(new Font("Arial", 24));
+        titleLabel.setTextFill(Color.web("#ffffff"));
+
+        descriptionLabel = new Label();
+        descriptionLabel.setFont(new Font("Arial", 18));
+        descriptionLabel.setTextFill(Color.web("#a0a0a0"));
+
+        vBox = new VBox(5, titleLabel, descriptionLabel);
+        vBox.setAlignment(Pos.CENTER_LEFT);
+    }
+
     @Override
     protected void updateItem(HelpArticle article, boolean empty) {
         super.updateItem(article, empty);
 
         if (article != null && !empty) {
-            // Create labels for title and description
-            Label titleLabel = new Label(article.getTitle());
-            titleLabel.setFont(new Font("Arial", 24));
-            titleLabel.setTextFill(Color.web("#ffffff"));
-
-            Label descriptionLabel = new Label(article.getDescription());
-            descriptionLabel.setFont(new Font("Arial", 18));
-            descriptionLabel.setTextFill(Color.web("#a0a0a0"));
-
-            // Layout using VBox
-            VBox vBox = new VBox(5, titleLabel, descriptionLabel);
-            vBox.setAlignment(Pos.CENTER_LEFT);
-
+            // Update labels with article information
+            titleLabel.setText(article.getTitle());
+            descriptionLabel.setText(article.getDescription());
             setGraphic(vBox);
         } else {
             setGraphic(null);

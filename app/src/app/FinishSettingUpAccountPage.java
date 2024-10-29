@@ -20,8 +20,8 @@ import javafx.geometry.Insets;
  *     
  */
 public class FinishSettingUpAccountPage {
-    private Stage stage;
-    private User user;
+    private final Stage stage;
+    private final User user;
     private Runnable onFinishSetup;
 
     public FinishSettingUpAccountPage(Stage stage, User user) {
@@ -37,6 +37,9 @@ public class FinishSettingUpAccountPage {
      * Displays the account setup UI and handles user interactions.
      */
     public void show() {
+        String fieldStyle = "-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;";
+        String buttonStyle = "-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;";
+
         // Title label
         Label titleLabel = new Label("Finish Setting Up Your Account");
         titleLabel.setFont(new Font("Arial", 56));
@@ -46,31 +49,31 @@ public class FinishSettingUpAccountPage {
         TextField emailField = new TextField();
         emailField.setPromptText("EMAIL ADDRESS");
         emailField.setMaxWidth(600);
-        emailField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        emailField.setStyle(fieldStyle);
 
         // First Name field
         TextField firstNameField = new TextField();
         firstNameField.setPromptText("FIRST NAME");
         firstNameField.setMaxWidth(600);
-        firstNameField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        firstNameField.setStyle(fieldStyle);
 
         // Middle Name field
         TextField middleNameField = new TextField();
         middleNameField.setPromptText("MIDDLE NAME");
         middleNameField.setMaxWidth(600);
-        middleNameField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        middleNameField.setStyle(fieldStyle);
 
         // Last Name field
         TextField lastNameField = new TextField();
         lastNameField.setPromptText("LAST NAME");
         lastNameField.setMaxWidth(600);
-        lastNameField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        lastNameField.setStyle(fieldStyle);
 
         // Preferred Name field
         TextField preferredNameField = new TextField();
         preferredNameField.setPromptText("PREFERRED FIRST NAME (Optional)");
         preferredNameField.setMaxWidth(600);
-        preferredNameField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        preferredNameField.setStyle(fieldStyle);
 
         // Message label for error messages
         Label messageLabel = new Label();
@@ -81,7 +84,7 @@ public class FinishSettingUpAccountPage {
         Button saveButton = new Button("Save");
         saveButton.setPrefWidth(600);
         saveButton.setPrefHeight(50);
-        saveButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        saveButton.setStyle(buttonStyle);
         saveButton.setOnAction(e -> {
             String email = emailField.getText();
             String firstName = firstNameField.getText();
@@ -104,16 +107,13 @@ public class FinishSettingUpAccountPage {
 
                 // Proceed to role selection or home page
                 if (user.getRoles().size() > 1) {
-                    RoleSelectionPage roleSelectionPage = new RoleSelectionPage(stage, user);
-                    roleSelectionPage.show();
+                    new RoleSelectionPage(stage, user).show();
                 } else {
                     String role = user.getRoles().iterator().next();
-                    if (role.equals("Admin")) {
-                        AdminPage adminPage = new AdminPage(stage, user);
-                        adminPage.show();
+                    if ("Admin".equals(role)) {
+                        new AdminPage(stage, user).show();
                     } else {
-                        DashboardPage dashboardPage = new DashboardPage(stage, user);
-                        dashboardPage.show();
+                        new DashboardPage(stage, user).show();
                     }
                 }
             }
