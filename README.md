@@ -3,9 +3,9 @@
 ## Group Members
 - Ayush Kaushik (Team Leader)
 - Jaafar Abdeen
-- Lewam
-- Aaryan
-- Pragya
+- Lewam Atnafie
+- Aaryan Gaur
+- Pragya Kumari
 
 # Project Setup Instructions
 
