@@ -42,7 +42,7 @@ public class UserCell extends ListCell<User> {
         super.updateItem(user, empty);
 
         if (user != null && !empty) {
-            usernameLabel.setText(user.getUsername());
+            usernameLabel.setText(user.getPreferredName());
             rolesLabel.setText(user.getRoles().toString());
             levelLabel.setText("Level: " + user.getLevel());
             setGraphic(hBox);
