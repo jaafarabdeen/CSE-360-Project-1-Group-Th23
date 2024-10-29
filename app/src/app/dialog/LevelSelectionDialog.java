@@ -1,4 +1,4 @@
-package app;
+package app.dialog;
 
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ButtonType;

@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -11,6 +11,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import Encryption.EncryptionUtils;
+import app.User;
+
 import java.util.Base64;
 
 /**

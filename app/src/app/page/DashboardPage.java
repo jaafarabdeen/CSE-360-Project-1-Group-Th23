@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import app.User;
 import javafx.geometry.Insets;
 
 /**

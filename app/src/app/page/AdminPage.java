@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -16,6 +16,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import java.util.UUID;
+
+import app.User;
+import app.cell.UserCell;
+import app.dialog.LevelSelectionDialog;
+import app.dialog.RoleSelectionDialog;
+import app.dialog.TokenDisplayDialog;
+import app.util.DatabaseHelper;
+import app.util.Invitation;
+
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;

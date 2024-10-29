@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -14,6 +14,9 @@ import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import java.sql.SQLException;
 import Encryption.EncryptionUtils;
+import app.User;
+import app.util.DatabaseHelper;
+import app.util.Invitation;
 import Encryption.EncryptionHelper;
 import java.util.Base64;
 

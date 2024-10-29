@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -22,6 +22,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import app.HelpArticle;
+import app.User;
+import app.cell.HelpArticleCell;
+import app.util.DatabaseHelper;
+import app.util.HelpArticleDatabase;
 
 /**
  * The HelpArticlesPage class allows users to view and manage help articles.

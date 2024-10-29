@@ -1,4 +1,4 @@
-package app;
+package app.util;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Base64;
 import Encryption.EncryptionHelper;
+import app.HelpArticle;
+import app.User;
 
 /**
  * The DatabaseHelper class provides methods to interact with the HelpArticle and User databases.
