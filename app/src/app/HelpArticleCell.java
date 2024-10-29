@@ -23,7 +23,7 @@ public class HelpArticleCell extends ListCell<HelpArticle> {
         // Initialize labels and layout only once
         titleLabel = new Label();
         titleLabel.setFont(new Font("Arial", 24));
-        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.setTextFill(Color.web("#000000"));
 
         descriptionLabel = new Label();
         descriptionLabel.setFont(new Font("Arial", 18));
