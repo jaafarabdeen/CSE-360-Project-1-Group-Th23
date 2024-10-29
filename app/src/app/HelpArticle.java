@@ -11,6 +11,7 @@ import java.util.HashSet;
  * 
  * Author:
  *     - Ayush Kaushik
+ *     - Jaafar Abdeen
  */
 public class HelpArticle {
     private long id;
