@@ -22,7 +22,7 @@ public class UserCell extends ListCell<User> {
 
     public UserCell() {
         // Initialize styles
-        String whiteTextColor = "#ffffff";
+        String whiteTextColor = "#000000";
         String grayTextColor = "#a0a0a0";
 
         usernameLabel.setFont(new Font("Arial", 24));
