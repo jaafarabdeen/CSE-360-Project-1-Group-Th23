@@ -10,13 +10,18 @@ import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+import javafx.scene.control.Hyperlink;
+import java.awt.Desktop;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * The ViewArticlePage class allows users to view the details of a help article.
  * Displays the title, description, body, and other relevant information.
  * 
  * Author:
- *     - Ayush Kaushik
+ *     - Pragya Kumari
+ *     - Aaryan Gaur
  */
 public class ViewArticlePage {
     private Stage stage;
@@ -51,6 +56,18 @@ public class ViewArticlePage {
         bodyArea.setMaxHeight(400);
         bodyArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
 
+        // Reference links
+        VBox linksBox = new VBox();
+        linksBox.setAlignment(Pos.CENTER);
+        linksBox.setSpacing(10);
+
+        // Iterate through the reference links if they exist
+        for (String link : article.getReferenceLinks()) {
+            Hyperlink hyperlink = new Hyperlink(link);
+            hyperlink.setOnAction(e -> openLink(link));
+            linksBox.getChildren().add(hyperlink);
+        }
+
         // Back button
         Button backButton = new Button("Back");
         backButton.setPrefWidth(300);
@@ -62,7 +79,7 @@ public class ViewArticlePage {
         });
 
         // Layout using VBox
-        VBox vBox = new VBox(20, titleLabel, descriptionLabel, bodyArea, backButton);
+        VBox vBox = new VBox(20, titleLabel, descriptionLabel, bodyArea, linksBox, backButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
         vBox.setStyle("-fx-background-color: #3b5998;");
@@ -72,5 +89,17 @@ public class ViewArticlePage {
         stage.setTitle("View Article");
         stage.setScene(scene);
         stage.show();
+    }
+
+    /**
+     * Opens the given link in the default web browser.
+     * @param link The URL to open.
+     */
+    private void openLink(String link) {
+        try {
+            Desktop.getDesktop().browse(new URI(link));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 }
