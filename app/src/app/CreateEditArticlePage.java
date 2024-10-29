@@ -19,14 +19,15 @@ import java.util.Set;
  * Users can enter all the necessary fields and save the article to the database.
  * 
  * Author:
+ *     - Jaafar Abdeen
  *     - Ayush Kaushik
  *     - Pragya Kumari
  *     - Aaryan Gaur
  */
 public class CreateEditArticlePage {
-    private Stage stage;
-    private User user;
-    private HelpArticle article; // null if creating a new article
+    private final Stage stage;
+    private final User user;
+    private final HelpArticle article; // null if creating a new article
 
     public CreateEditArticlePage(Stage stage, User user, HelpArticle article) {
         this.stage = stage;
@@ -101,8 +102,7 @@ public class CreateEditArticlePage {
             keywordsField.setText(String.join(", ", article.getKeywords()));
             levelField.setText(article.getLevel());
             groupsField.setText(String.join(", ", article.getGroups()));
-            // Assuming the HelpArticle class has a method to get reference links
-            referenceLinksArea.setText(String.join(", ", article.getReferenceLinks())); // Added for reference links
+            referenceLinksArea.setText(String.join(", ", article.getReferenceLinks()));
         }
 
         // Save button
@@ -114,28 +114,14 @@ public class CreateEditArticlePage {
             String title = titleField.getText();
             String description = descriptionArea.getText();
             String body = bodyArea.getText();
-            String keywordsText = keywordsField.getText();
             String level = levelField.getText();
-            String groupsText = groupsField.getText();
-            String referenceLinksText = referenceLinksArea.getText(); // Collect reference links
 
             if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level.isEmpty()) {
                 messageLabel.setText("Please fill in the required fields.");
             } else {
-                Set<String> keywords = new HashSet<>();
-                for (String keyword : keywordsText.split(",")) {
-                    keywords.add(keyword.trim());
-                }
-
-                Set<String> groups = new HashSet<>();
-                for (String group : groupsText.split(",")) {
-                    groups.add(group.trim());
-                }
-
-                Set<String> referenceLinks = new HashSet<>();
-                for (String link : referenceLinksText.split(",")) {
-                    referenceLinks.add(link.trim()); // Collecting reference links
-                }
+                Set<String> keywords = parseInputToSet(keywordsField.getText());
+                Set<String> groups = parseInputToSet(groupsField.getText());
+                Set<String> referenceLinks = parseInputToSet(referenceLinksArea.getText());
 
                 if (article == null) {
                     // Create new article
@@ -149,13 +135,12 @@ public class CreateEditArticlePage {
                     article.setLevel(level);
                     article.setKeywords(keywords);
                     article.setGroups(groups);
-                    article.setReferenceLinks(referenceLinks); // Update reference links
+                    article.setReferenceLinks(referenceLinks);
                     HelpArticleDatabase.updateArticle(article);
                 }
 
                 // Return to help articles page
-                HelpArticlesPage helpArticlesPage = new HelpArticlesPage(stage, user);
-                helpArticlesPage.show();
+                new HelpArticlesPage(stage, user).show();
             }
         });
 
@@ -170,5 +155,13 @@ public class CreateEditArticlePage {
         stage.setTitle(article == null ? "Create Article" : "Edit Article");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private Set<String> parseInputToSet(String input) {
+        Set<String> result = new HashSet<>();
+        for (String item : input.split(",")) {
+            result.add(item.trim());
+        }
+        return result;
     }
 }

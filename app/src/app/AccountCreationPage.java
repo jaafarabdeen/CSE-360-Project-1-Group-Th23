@@ -11,9 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
-import java.sql.SQLException;
 import java.util.Base64;
-
 import Encryption.EncryptionUtils;
 
 /**
@@ -26,19 +24,21 @@ import Encryption.EncryptionUtils;
  *     - Lewam Atnafie
  */
 public class AccountCreationPage {
-    private Stage stage;
-    private Invitation invitation;
-    private DatabaseHelper databaseHelper;
+    private final Stage stage;
+    private final Invitation invitation;
+    private final DatabaseHelper databaseHelper;
 
     public AccountCreationPage(Stage stage, Invitation invitation) {
         this.stage = stage;
         this.invitation = invitation;
+        DatabaseHelper tempDatabaseHelper = null;
         try {
-            this.databaseHelper = new DatabaseHelper();
-            this.databaseHelper.connectToDatabase();
+            tempDatabaseHelper = new DatabaseHelper();
+            tempDatabaseHelper.connectToDatabase();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.databaseHelper = tempDatabaseHelper;
     }
 
     /**
@@ -85,8 +85,7 @@ public class AccountCreationPage {
             String username = usernameField.getText();
             String password = passwordField.getText();
             String confirmPassword = confirmPasswordField.getText();
-            String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
-            
+
             try {
                 if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                     messageLabel.setText("Please fill in all fields.");
@@ -95,7 +94,8 @@ public class AccountCreationPage {
                 } else if (databaseHelper.doesUserExist(username)) {
                     messageLabel.setText("Username already exists.");
                 } else {
-                    // Create new user account
+                    // Create new user account only if all checks pass
+                    String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
                     User newUser = new User(username, hashedPassword, "");
                     for (String role : invitation.getRoles()) {
                         newUser.addRole(role);

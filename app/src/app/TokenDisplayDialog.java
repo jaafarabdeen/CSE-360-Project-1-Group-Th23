@@ -11,7 +11,7 @@ import javafx.scene.control.Alert.AlertType;
  *     - Lewam Atnafie
  */
 public class TokenDisplayDialog {
-    private String token;
+    private final String token;
 
     public TokenDisplayDialog(String token) {
         this.token = token;
@@ -25,7 +25,6 @@ public class TokenDisplayDialog {
         alert.setTitle("Invitation Token");
         alert.setHeaderText("Generated Invitation Token");
         alert.setContentText("Token: " + token);
-
         alert.showAndWait();
     }
 }

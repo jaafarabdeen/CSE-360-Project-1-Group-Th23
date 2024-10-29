@@ -1,34 +1,38 @@
 package app;
 
 import java.sql.*;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Base64;
 import Encryption.EncryptionHelper;
-import Encryption.EncryptionUtils;
-import app.HelpArticle;
-import app.User;
-import app.Invitation;
 
 /**
  * The DatabaseHelper class provides methods to interact with the HelpArticle and User databases.
  * It allows connecting to the database, adding, viewing, deleting articles, users, and handling backups.
+ *  
+ * Author:
+ *     - Jaafar Abdeen
  */
 public class DatabaseHelper {
 
     // JDBC driver name and database URL 
     static final String JDBC_DRIVER = "org.h2.Driver";   
-    static final String DB_URL = "jdbc:h2:~/appDatabase";  
+    static final String DB_URL = "jdbc:h2:../database/appDatabase";  
 
     //  Database credentials 
     static final String USER = "sa"; 
     static final String PASS = ""; 
 
     private Connection connection = null;
-    private Statement statement = null; 
+    private Statement statement = null;
     private EncryptionHelper encryptionHelper;
 
     /**
@@ -83,6 +87,7 @@ public class DatabaseHelper {
                 + "level VARCHAR(255), "
                 + "keywords VARCHAR(500), "
                 + "groups VARCHAR(500), "
+                + "reference_links VARCHAR(1000), "
                 + "author_username VARCHAR(255))";
         statement.execute(articleTable);
 
@@ -237,8 +242,7 @@ public class DatabaseHelper {
      * @throws Exception if an error occurs during article insertion.
      */
     public void registerArticle(HelpArticle article) throws SQLException {
-        String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, author_username) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
+        String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, reference_links, author_username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertArticle, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, article.getTitle());
             pstmt.setString(2, article.getDescription());
@@ -246,12 +250,13 @@ public class DatabaseHelper {
             pstmt.setString(4, article.getLevel());
             pstmt.setString(5, String.join(",", article.getKeywords()));
             pstmt.setString(6, String.join(",", article.getGroups()));
-            pstmt.setString(7, article.getAuthorUsername());
+            pstmt.setString(7, String.join(",", article.getReferenceLinks()));
+            pstmt.setString(8, article.getAuthorUsername());
             pstmt.executeUpdate();
             
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) { // Use pstmt.getGeneratedKeys() instead of statement.getGeneratedKeys()
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    article.setId(generatedKeys.getLong(1)); // Set the id from the generated keys
+                    article.setId(generatedKeys.getLong(1));
                 } else {
                     throw new SQLException("Creating help article failed, no ID obtained.");
                 }
@@ -266,7 +271,7 @@ public class DatabaseHelper {
      * @throws SQLException if an error occurs during article update.
      */
     public void updateArticle(HelpArticle article) throws SQLException {
-        String updateQuery = "UPDATE help_articles SET title = ?, description = ?, body = ?, level = ?, keywords = ?, groups = ? WHERE id = ?";
+        String updateQuery = "UPDATE help_articles SET title = ?, description = ?, body = ?, level = ?, keywords = ?, groups = ?, reference_links = ? WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(updateQuery)) {
             pstmt.setString(1, article.getTitle());
             pstmt.setString(2, article.getDescription());
@@ -274,7 +279,8 @@ public class DatabaseHelper {
             pstmt.setString(4, article.getLevel());
             pstmt.setString(5, String.join(",", article.getKeywords()));
             pstmt.setString(6, String.join(",", article.getGroups()));
-            pstmt.setLong(7, article.getId());
+            pstmt.setString(7, String.join(",", article.getReferenceLinks()));
+            pstmt.setLong(8, article.getId());
             pstmt.executeUpdate();
         }
     }
@@ -293,12 +299,14 @@ public class DatabaseHelper {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     HelpArticle article = new HelpArticle(
+                            rs.getLong("id"),
                             rs.getString("title"),
                             rs.getString("description"),
                             rs.getString("body"),
                             rs.getString("level"),
-                            Set.of(rs.getString("keywords").split(",")),
-                            Set.of(rs.getString("groups").split(",")),
+                            new HashSet<>(Set.of(rs.getString("keywords").split(","))),
+                            new HashSet<>(Set.of(rs.getString("groups").split(","))),
+                            new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
                             rs.getString("author_username")
                     );
                     return article;
@@ -335,19 +343,102 @@ public class DatabaseHelper {
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 HelpArticle article = new HelpArticle(
-                		rs.getLong("id"),
+                        rs.getLong("id"),
                         rs.getString("title"),
                         rs.getString("description"),
                         rs.getString("body"),
                         rs.getString("level"),
-                        Set.of(rs.getString("keywords").split(",")),
-                        Set.of(rs.getString("groups").split(",")),
+                        new HashSet<>(Set.of(rs.getString("keywords").split(","))),
+                        new HashSet<>(Set.of(rs.getString("groups").split(","))),
+                        new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
                         rs.getString("author_username")
                 );
                 articles.add(article);
             }
         }
         return articles;
+    }
+    
+    /**
+     * Backs up articles to a specified backup file.
+     *
+     * @param fileName The name of the backup file.
+     * @throws SQLException if an error occurs during article backup.
+     * @throws IOException  if an error occurs during file writing.
+     */
+    public void backupArticles(String fileName) throws SQLException, IOException, Exception {
+        String query = "SELECT * FROM help_articles";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query);
+             FileWriter writer = new FileWriter(fileName)) {
+
+            while (rs.next()) {
+                String articleData = rs.getString("title") + "§" + rs.getString("description") + "§" +
+                                     rs.getString("body") + "§" + rs.getString("level") + "§" +
+                                     rs.getString("keywords") + "§" + rs.getString("groups") + "§" +
+                                     rs.getString("reference_links") + "§" +
+                                     rs.getString("author_username");
+
+                // Generate a random IV
+                byte[] iv = new byte[16];
+                SecureRandom random = new SecureRandom();
+                random.nextBytes(iv);
+
+                // Encrypt the article data with the random IV
+                byte[] encryptedData = encryptionHelper.encrypt(articleData.getBytes(StandardCharsets.UTF_8), iv);
+
+                // Encode IV and encrypted data to Base64 and store them in the backup file
+                String encodedIv = Base64.getEncoder().encodeToString(iv);
+                String encodedData = Base64.getEncoder().encodeToString(encryptedData);
+                writer.write(encodedIv + "," + encodedData + "\n");
+            }
+        }
+    }
+
+    /**
+     * Restores articles from a specified backup file.
+     *
+     * @param fileName The name of the backup file.
+     * @throws SQLException if an error occurs during article restoration.
+     * @throws IOException  if an error occurs during file reading.
+     */
+    public void restoreArticles(String fileName) throws SQLException, IOException, Exception {
+        String clearQuery = "DELETE FROM help_articles";
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate(clearQuery);
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",", 2); // Separate IV and encrypted data
+                if (parts.length != 2) continue;
+
+                byte[] iv = Base64.getDecoder().decode(parts[0]);
+                byte[] encryptedData = Base64.getDecoder().decode(parts[1]);
+
+                // Decrypt article data using the extracted IV
+                byte[] decryptedData = encryptionHelper.decrypt(encryptedData, iv);
+
+                String articleData = new String(decryptedData, StandardCharsets.UTF_8);
+                String[] fields = articleData.split("§", 8);
+
+                if (fields.length != 8) continue;
+
+                String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, reference_links, author_username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
+                    pstmt.setString(1, fields[0]);
+                    pstmt.setString(2, fields[1]);
+                    pstmt.setString(3, fields[2]);
+                    pstmt.setString(4, fields[3]);
+                    pstmt.setString(5, fields[4]);
+                    pstmt.setString(6, fields[5]);
+                    pstmt.setString(7, fields[6]);
+                    pstmt.setString(8, fields[7]);
+                    pstmt.executeUpdate();
+                }
+            }
+        }
     }
     
     /**
@@ -442,10 +533,6 @@ public class DatabaseHelper {
     public void closeConnection() {
         try {
             if (statement != null) statement.close();
-        } catch (SQLException se2) {
-            se2.printStackTrace();
-        }
-        try {
             if (connection != null) connection.close();
         } catch (SQLException se) {
             se.printStackTrace();

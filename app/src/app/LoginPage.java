@@ -25,154 +25,70 @@ import java.util.Base64;
  * User data is stored in the database.
  * Invitation codes are also stored in a database table for validation purposes.
  * 
- * @author
+ * Author:
  *     - Pragya Kumari
  *     - Aaryan Gaur
  */
 public class LoginPage {
-    private Stage stage;
-    private DatabaseHelper databaseHelper;
-    private EncryptionHelper encryptionHelper;
+    private final Stage stage;
+    private final DatabaseHelper databaseHelper;
+    private final EncryptionHelper encryptionHelper;
 
     public LoginPage(Stage stage) {
         this.stage = stage;
+        DatabaseHelper tempDatabaseHelper = null;
+        EncryptionHelper tempEncryptionHelper = null;
         try {
-            this.databaseHelper = new DatabaseHelper();
-            this.encryptionHelper = new EncryptionHelper();
-            this.databaseHelper.connectToDatabase();
+            tempDatabaseHelper = new DatabaseHelper();
+            tempEncryptionHelper = new EncryptionHelper();
+            tempDatabaseHelper.connectToDatabase();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.databaseHelper = tempDatabaseHelper;
+        this.encryptionHelper = tempEncryptionHelper;
     }
 
     /**
      * Displays the login page UI and handles user interactions.
      */
     public void show() {
+        String buttonStyle = "-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;";
+        String fieldStyle = "-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;";
+
         // Title label with welcome message
         Label titleLabel = new Label("Welcome!");
-        titleLabel.setFont(new Font("Arial", 56));  // Larger font for better visibility
+        titleLabel.setFont(new Font("Arial", 56));
         titleLabel.setTextFill(Color.web("#ffffff"));
 
         // Username input field
         TextField usernameField = new TextField();
         usernameField.setPromptText("USERNAME");
         usernameField.setMaxWidth(600);
-        usernameField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        usernameField.setStyle(fieldStyle);
 
         // Password input field
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("PASSWORD");
         passwordField.setMaxWidth(600);
-        passwordField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        passwordField.setStyle(fieldStyle);
 
         // Invitation code input field
         TextField invitationCodeField = new TextField();
         invitationCodeField.setPromptText("INVITATION CODE");
         invitationCodeField.setMaxWidth(600);
-        invitationCodeField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
-
-        // Login button
-        Button loginButton = new Button("Login");
-        loginButton.setPrefWidth(600);
-        loginButton.setPrefHeight(50);
-        loginButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-
-        // Register button
-        Button registerButton = new Button("Register");
-        registerButton.setPrefWidth(600);
-        registerButton.setPrefHeight(50);
-        registerButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-
+        invitationCodeField.setStyle(fieldStyle);
+        
         // Message label for error or information messages
         Label messageLabel = new Label();
         messageLabel.setTextFill(Color.web("#ff5555"));
         messageLabel.setFont(new Font("Arial", 28));
 
-        // Event handler for the register button
-        registerButton.setOnAction(e -> {
-            String invitationCode = invitationCodeField.getText();
-            if (!invitationCode.isEmpty()) {
-                // Handle registration via invitation code
-                try {
-                    if (databaseHelper.doesInvitationExist(invitationCode)) {
-                        Invitation invitation = databaseHelper.getInvitation(invitationCode);
-                        databaseHelper.deleteInvitation(invitationCode);
-                        // Proceed to account creation page
-                        AccountCreationPage accountCreationPage = new AccountCreationPage(stage, invitation);
-                        accountCreationPage.show();
-                    } else {
-                        messageLabel.setText("Invalid invitation code.");
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            } else {
-                messageLabel.setText("Please enter an invitation code.");
-            }
-        });
+        // Login button
+        Button loginButton = createButton("Login", buttonStyle, e -> handleLogin(usernameField, passwordField, messageLabel));
 
-        // Event handler for the login button
-        loginButton.setOnAction(e -> {
-            String username = usernameField.getText();
-            String password = passwordField.getText();
-            String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
-
-            try {
-                if (databaseHelper.isDatabaseEmpty()) {
-                    // If no users exist, create an admin account
-                    if (username.isEmpty() || password.isEmpty()) {
-                        messageLabel.setText("Please enter a username and password.");
-                    } else {
-                        User adminUser = new User(username, hashedPassword, "Admin");
-                        databaseHelper.registerUser(adminUser);
-                        messageLabel.setText("Admin account created. Please log in again.");
-                        usernameField.clear();
-                        passwordField.clear();
-                    }
-                } else if (!username.isEmpty() && !password.isEmpty()) {
-                    // Handle normal login
-                    if (databaseHelper.doesUserExist(username)) {
-                        User user = databaseHelper.getUser(username);
-                        if (hashedPassword.equals(user.getPassword())) {
-                            // Proceed to appropriate page based on role
-                            if (user.getEmail() == null || user.getFirstName() == null) {
-                                FinishSettingUpAccountPage finishPage = new FinishSettingUpAccountPage(stage, user);
-                                finishPage.show();
-                                // After setting up, update user in the database
-                                finishPage.setOnFinishSetup(() -> {
-                                    try {
-                                        databaseHelper.updateUser(user); // Persist user details to the database
-                                    } catch (SQLException ex) {
-                                        ex.printStackTrace();
-                                    }
-                                });
-                            } else if (user.getRoles().size() > 1) {
-                                RoleSelectionPage roleSelectionPage = new RoleSelectionPage(stage, user);
-                                roleSelectionPage.show();
-                            } else {
-                                String role = user.getRoles().iterator().next();
-                                if (role.equals("Admin")) {
-                                    AdminPage adminPage = new AdminPage(stage, user);
-                                    adminPage.show();
-                                } else {
-                                    DashboardPage dashboardPage = new DashboardPage(stage, user);
-                                    dashboardPage.show();
-                                }
-                            }
-                        } else {
-                            messageLabel.setText("Incorrect password.");
-                        }
-                    } else {
-                        messageLabel.setText("User not found.");
-                    }
-                } else {
-                    messageLabel.setText("Please enter your username and password or invitation code.");
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
+        // Register button
+        Button registerButton = createButton("Register", buttonStyle, e -> handleRegistration(invitationCodeField, messageLabel));
 
         // Layout configuration using VBox
         VBox vBox = new VBox(20, titleLabel, usernameField, passwordField, invitationCodeField, loginButton, registerButton, messageLabel);
@@ -188,6 +104,103 @@ public class LoginPage {
         Scene scene = new Scene(borderPane, 1920, 1080);
         stage.setTitle("Login Page");
         stage.setScene(scene);
-        stage.show();  // Display the login page
+        stage.show();
+    }
+
+    private void handleRegistration(TextField invitationCodeField, Label messageLabel) {
+        String invitationCode = invitationCodeField.getText();
+        if (invitationCode.isEmpty()) {
+            messageLabel.setText("Please enter an invitation code.");
+            return;
+        }
+
+        try {
+            if (databaseHelper.doesInvitationExist(invitationCode)) {
+                Invitation invitation = databaseHelper.getInvitation(invitationCode);
+                databaseHelper.deleteInvitation(invitationCode);
+                new AccountCreationPage(stage, invitation).show();
+            } else {
+                messageLabel.setText("Invalid invitation code.");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void handleLogin(TextField usernameField, PasswordField passwordField, Label messageLabel) {
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
+
+        try {
+            if (databaseHelper.isDatabaseEmpty()) {
+                handleAdminAccountCreation(username, password, messageLabel);
+            } else if (!username.isEmpty() && !password.isEmpty()) {
+                if (databaseHelper.doesUserExist(username)) {
+                    User user = databaseHelper.getUser(username);
+                    if (hashedPassword.equals(user.getPassword())) {
+                        proceedToNextPage(user);
+                    } else {
+                        messageLabel.setText("Incorrect password.");
+                    }
+                } else {
+                    messageLabel.setText("User not found.");
+                }
+            } else {
+                messageLabel.setText("Please enter your username and password or invitation code.");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void handleAdminAccountCreation(String username, String password, Label messageLabel) throws SQLException {
+        if (username.isEmpty() || password.isEmpty()) {
+            messageLabel.setText("Please enter a username and password.");
+        } else {
+            User adminUser = new User(username, Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password)), "Admin");
+            try {
+				databaseHelper.registerUser(adminUser);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+            messageLabel.setText("Admin account created. Please log in again.");
+        }
+    }
+
+    private void proceedToNextPage(User user) {
+        if (user.getEmail() == null || user.getFirstName() == null) {
+            FinishSettingUpAccountPage finishPage = new FinishSettingUpAccountPage(stage, user);
+            finishPage.show();
+            finishPage.setOnFinishSetup(() -> {
+                try {
+                    databaseHelper.updateUser(user);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            });
+        } else if (user.getRoles().size() > 1) {
+            new RoleSelectionPage(stage, user).show();
+        } else {
+            navigateToRolePage(user);
+        }
+    }
+
+    private void navigateToRolePage(User user) {
+        String role = user.getRoles().iterator().next();
+        if ("Admin".equals(role)) {
+            new AdminPage(stage, user).show();
+        } else {
+            new DashboardPage(stage, user).show();
+        }
+    }
+
+    private Button createButton(String text, String style, javafx.event.EventHandler<javafx.event.ActionEvent> action) {
+        Button button = new Button(text);
+        button.setPrefWidth(600);
+        button.setPrefHeight(50);
+        button.setStyle(style);
+        button.setOnAction(action);
+        return button;
     }
 }

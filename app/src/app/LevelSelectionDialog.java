@@ -12,7 +12,7 @@ import javafx.geometry.Insets;
  * Users can select their level during account creation, or admins can assign levels.
  * 
  * Author:
- *     - Ayush kaushik
+ *     - Ayush Kaushik
  */
 public class LevelSelectionDialog {
     /**
@@ -24,7 +24,7 @@ public class LevelSelectionDialog {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Select Level");
 
-        // Level choice box
+        // Level choice box with default selection
         ChoiceBox<String> levelChoiceBox = new ChoiceBox<>();
         levelChoiceBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert");
         levelChoiceBox.setValue("Intermediate");
@@ -34,15 +34,13 @@ public class LevelSelectionDialog {
 
         dialog.getDialogPane().setContent(vBox);
 
+        // OK and Cancel buttons
         ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == okButtonType) {
-                return levelChoiceBox.getValue();
-            }
-            return null;
-        });
+        dialog.setResultConverter(dialogButton -> 
+            dialogButton == okButtonType ? levelChoiceBox.getValue() : null
+        );
 
         return dialog.showAndWait().orElse(null);
     }

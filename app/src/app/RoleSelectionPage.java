@@ -19,8 +19,8 @@ import javafx.geometry.Insets;
  *     - Jaafar Abdeen
  */
 public class RoleSelectionPage {
-    private Stage stage;
-    private User user;
+    private final Stage stage;
+    private final User user;
 
     public RoleSelectionPage(Stage stage, User user) {
         this.stage = stage;
@@ -40,22 +40,7 @@ public class RoleSelectionPage {
         roleButtons.setAlignment(Pos.CENTER);
 
         // Create a button for each role the user has
-        for (String role : user.getRoles()) {
-            Button roleButton = new Button(role);
-            roleButton.setPrefWidth(600);
-            roleButton.setPrefHeight(50);
-            roleButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-            roleButton.setOnAction(e -> {
-                if (role.equals("Admin")) {
-                    AdminPage adminPage = new AdminPage(stage, user);
-                    adminPage.show();
-                } else {
-                    DashboardPage dashboardPage = new DashboardPage(stage, user);
-                    dashboardPage.show();
-                }
-            });
-            roleButtons.getChildren().add(roleButton);
-        }
+        user.getRoles().forEach(role -> roleButtons.getChildren().add(createRoleButton(role)));
 
         // Layout using VBox
         VBox vBox = new VBox(40, roleLabel, roleButtons);
@@ -72,5 +57,22 @@ public class RoleSelectionPage {
         stage.setTitle("Role Selection");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private Button createRoleButton(String role) {
+        Button roleButton = new Button(role);
+        roleButton.setPrefWidth(600);
+        roleButton.setPrefHeight(50);
+        roleButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
+        roleButton.setOnAction(e -> navigateToRolePage(role));
+        return roleButton;
+    }
+
+    private void navigateToRolePage(String role) {
+        if ("Admin".equals(role)) {
+            new AdminPage(stage, user).show();
+        } else {
+            new DashboardPage(stage, user).show();
+        }
     }
 }
