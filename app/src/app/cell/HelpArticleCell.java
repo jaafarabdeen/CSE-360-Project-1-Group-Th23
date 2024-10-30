@@ -3,8 +3,6 @@ package app.cell;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import app.HelpArticle;
 import javafx.geometry.Pos;
 
@@ -23,12 +21,10 @@ public class HelpArticleCell extends ListCell<HelpArticle> {
     public HelpArticleCell() {
         // Initialize labels and layout only once
         titleLabel = new Label();
-        titleLabel.setFont(new Font("Arial", 24));
-        titleLabel.setTextFill(Color.web("#000000"));
+        titleLabel.getStyleClass().add("article-title");
 
         descriptionLabel = new Label();
-        descriptionLabel.setFont(new Font("Arial", 18));
-        descriptionLabel.setTextFill(Color.web("#a0a0a0"));
+        descriptionLabel.getStyleClass().add("article-description");
 
         vBox = new VBox(5, titleLabel, descriptionLabel);
         vBox.setAlignment(Pos.CENTER_LEFT);

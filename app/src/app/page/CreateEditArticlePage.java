@@ -7,16 +7,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import java.util.HashSet;
 import java.util.Set;
 
 import app.HelpArticle;
 import app.User;
 import app.util.HelpArticleDatabase;
+import app.util.UIHelper;
 
 /**
  * The CreateEditArticlePage class allows admins and instructors to create or edit help articles.
@@ -45,58 +44,31 @@ public class CreateEditArticlePage {
     public void show() {
         // Title label
         Label titleLabel = new Label(article == null ? "Create New Article" : "Edit Article");
-        titleLabel.setFont(new Font("Arial", 56));
-        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.getStyleClass().add("label-title");
 
         // Title field
-        TextField titleField = new TextField();
-        titleField.setPromptText("TITLE");
-        titleField.setMaxWidth(800);
-        titleField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextField titleField = UIHelper.createTextField("TITLE");
 
         // Description field
-        TextArea descriptionArea = new TextArea();
-        descriptionArea.setPromptText("DESCRIPTION");
-        descriptionArea.setMaxWidth(800);
-        descriptionArea.setMaxHeight(100);
-        descriptionArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextArea descriptionArea = UIHelper.createTextArea("DESCRIPTION", 800, 100);
 
         // Body field
-        TextArea bodyArea = new TextArea();
-        bodyArea.setPromptText("BODY");
-        bodyArea.setMaxWidth(800);
-        bodyArea.setMaxHeight(300);
-        bodyArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextArea bodyArea = UIHelper.createTextArea("BODY", 800, 300);
 
         // Keywords field
-        TextField keywordsField = new TextField();
-        keywordsField.setPromptText("KEYWORDS (comma-separated)");
-        keywordsField.setMaxWidth(800);
-        keywordsField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextField keywordsField = UIHelper.createTextField("KEYWORDS (comma-separated)");
 
         // Level field
-        TextField levelField = new TextField();
-        levelField.setPromptText("LEVEL (Beginner, Intermediate, Advanced, Expert)");
-        levelField.setMaxWidth(800);
-        levelField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextField levelField = UIHelper.createTextField("LEVEL (Beginner, Intermediate, Advanced, Expert)");
 
         // Groups field
-        TextField groupsField = new TextField();
-        groupsField.setPromptText("GROUPS (comma-separated)");
-        groupsField.setMaxWidth(800);
-        groupsField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextField groupsField = UIHelper.createTextField("GROUPS (comma-separated)");
 
         // Reference Links field
-        TextArea referenceLinksArea = new TextArea();
-        referenceLinksArea.setPromptText("REFERENCE LINKS (comma-separated)");
-        referenceLinksArea.setMaxWidth(800);
-        referenceLinksArea.setMaxHeight(100);
-        referenceLinksArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextArea referenceLinksArea = UIHelper.createTextArea("REFERENCE LINKS (comma-separated)", 800, 100);
 
         // Message label for error messages
-        Label messageLabel = new Label();
-        messageLabel.setTextFill(Color.web("#ff5555"));
-        messageLabel.setFont(new Font("Arial", 28));
+        Label messageLabel = UIHelper.createMessageLabel();
 
         // Pre-fill fields if editing
         if (article != null) {
@@ -110,18 +82,14 @@ public class CreateEditArticlePage {
         }
 
         // Save button
-        Button saveButton = new Button("Save");
-        saveButton.setPrefWidth(600);
-        saveButton.setPrefHeight(50);
-        saveButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        saveButton.setOnAction(e -> {
+        Button saveButton = UIHelper.createButton("Save", e -> {
             String title = titleField.getText();
             String description = descriptionArea.getText();
             String body = bodyArea.getText();
             String level = levelField.getText();
 
             if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level.isEmpty()) {
-                messageLabel.setText("Please fill in the required fields.");
+                UIHelper.setMessage(messageLabel, "Please fill in the required fields.", true);
             } else {
                 Set<String> keywords = parseInputToSet(keywordsField.getText());
                 Set<String> groups = parseInputToSet(groupsField.getText());
@@ -149,25 +117,26 @@ public class CreateEditArticlePage {
         });
 
         // Back button
-        Button backButton = new Button("Back");
-        backButton.setPrefWidth(600);
-        backButton.setPrefHeight(50);
-        backButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
-        backButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
+        Button backButton = UIHelper.createButton("Back", e -> new HelpArticlesPage(stage, user).show());
 
         // Layout using VBox
         VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, referenceLinksArea, saveButton, backButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
-        vBox.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(vBox, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(vBox, 1920, 1080);
         stage.setTitle(article == null ? "Create Article" : "Edit Article");
         stage.setScene(scene);
         stage.show();
     }
 
+    /**
+     * Helper method to parse comma-separated input strings into a Set of trimmed strings.
+     * 
+     * @param input the comma-separated input string
+     * @return a Set of trimmed strings
+     */
     private Set<String> parseInputToSet(String input) {
         Set<String> result = new HashSet<>();
         for (String item : input.split(",")) {

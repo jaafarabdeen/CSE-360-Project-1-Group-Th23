@@ -7,16 +7,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import java.util.Base64;
 import Encryption.EncryptionUtils;
 import app.User;
 import app.dialog.LevelSelectionDialog;
 import app.util.DatabaseHelper;
 import app.util.Invitation;
+import app.util.UIHelper;
 
 /**
  * The AccountCreationPage class allows new users to create an account using an invitation code.
@@ -51,52 +50,35 @@ public class AccountCreationPage {
     public void show() {
         // Title label
         Label titleLabel = new Label("Create Your Account");
-        titleLabel.setFont(new Font("Arial", 56));
-        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.getStyleClass().add("label-title");
 
         // Username field
-        TextField usernameField = new TextField();
-        usernameField.setPromptText("USERNAME");
-        usernameField.setMaxWidth(600);
-        usernameField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        TextField usernameField = UIHelper.createTextField("USERNAME");
 
         // Password fields
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("PASSWORD");
-        passwordField.setMaxWidth(600);
-        passwordField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
-
-        PasswordField confirmPasswordField = new PasswordField();
-        confirmPasswordField.setPromptText("CONFIRM PASSWORD");
-        confirmPasswordField.setMaxWidth(600);
-        confirmPasswordField.setStyle("-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;");
+        PasswordField passwordField = UIHelper.createPasswordField("PASSWORD");
+        PasswordField confirmPasswordField = UIHelper.createPasswordField("CONFIRM PASSWORD");
 
         // Level selection field
         LevelSelectionDialog levelDialog = new LevelSelectionDialog();
         String selectedLevel = levelDialog.showAndWait();
 
         // Message label for error messages
-        Label messageLabel = new Label();
-        messageLabel.setTextFill(Color.web("#ff5555"));
-        messageLabel.setFont(new Font("Arial", 28));
+        Label messageLabel = UIHelper.createMessageLabel();
 
         // Register button
-        Button registerButton = new Button("Register");
-        registerButton.setPrefWidth(600);
-        registerButton.setPrefHeight(50);
-        registerButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        registerButton.setOnAction(e -> {
+        Button registerButton = UIHelper.createButton("Register", e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
             String confirmPassword = confirmPasswordField.getText();
 
             try {
                 if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                    messageLabel.setText("Please fill in all fields.");
+                    UIHelper.setMessage(messageLabel, "Please fill in all fields.", true);
                 } else if (!password.equals(confirmPassword)) {
-                    messageLabel.setText("Passwords do not match.");
+                    UIHelper.setMessage(messageLabel, "Passwords do not match.", true);
                 } else if (databaseHelper.doesUserExist(username)) {
-                    messageLabel.setText("Username already exists.");
+                    UIHelper.setMessage(messageLabel, "Username already exists.", true);
                 } else {
                     // Create new user account only if all checks pass
                     String hashedPassword = Base64.getEncoder().encodeToString(EncryptionUtils.hashPassword(password));
@@ -106,14 +88,14 @@ public class AccountCreationPage {
                     }
                     newUser.setLevel(selectedLevel);
                     databaseHelper.registerUser(newUser);
-                    messageLabel.setText("Account created. Please log in.");
+                    UIHelper.setMessage(messageLabel, "Account created. Please log in.", false);
                     // Return to login page
                     LoginPage loginPage = new LoginPage(stage);
                     loginPage.show();
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                messageLabel.setText("An error occurred. Please try again.");
+                UIHelper.setMessage(messageLabel, "An error occurred. Please try again.", true);
             }
         });
 
@@ -121,10 +103,9 @@ public class AccountCreationPage {
         VBox vBox = new VBox(20, titleLabel, usernameField, passwordField, confirmPasswordField, registerButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(60));
-        vBox.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(vBox, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(vBox, 1920, 1080);
         stage.setTitle("Account Creation");
         stage.setScene(scene);
         stage.show();

@@ -3,8 +3,6 @@ package app.cell;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.control.Label;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import app.User;
 import javafx.geometry.Pos;
 
@@ -22,18 +20,10 @@ public class UserCell extends ListCell<User> {
     private final HBox hBox = new HBox(20, usernameLabel, rolesLabel, levelLabel);
 
     public UserCell() {
-        // Initialize styles
-        String whiteTextColor = "#000000";
-        String grayTextColor = "#a0a0a0";
-
-        usernameLabel.setFont(new Font("Arial", 24));
-        usernameLabel.setTextFill(Color.web(whiteTextColor));
-
-        rolesLabel.setFont(new Font("Arial", 18));
-        rolesLabel.setTextFill(Color.web(grayTextColor));
-
-        levelLabel.setFont(new Font("Arial", 18));
-        levelLabel.setTextFill(Color.web(grayTextColor));
+        // Apply CSS classes for consistent styling
+        usernameLabel.getStyleClass().add("user-username");
+        rolesLabel.getStyleClass().add("user-roles");
+        levelLabel.getStyleClass().add("user-level");
 
         hBox.setAlignment(Pos.CENTER_LEFT);
     }
@@ -44,7 +34,7 @@ public class UserCell extends ListCell<User> {
 
         if (user != null && !empty) {
             usernameLabel.setText(user.getPreferredName());
-            rolesLabel.setText(user.getRoles().toString());
+            rolesLabel.setText(String.join(", ", user.getRoles()));
             levelLabel.setText("Level: " + user.getLevel());
             setGraphic(hBox);
         } else {

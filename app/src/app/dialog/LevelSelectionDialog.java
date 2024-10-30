@@ -28,6 +28,7 @@ public class LevelSelectionDialog {
         ChoiceBox<String> levelChoiceBox = new ChoiceBox<>();
         levelChoiceBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert");
         levelChoiceBox.setValue("Intermediate");
+        levelChoiceBox.getStyleClass().add("level-choice-box");
 
         VBox vBox = new VBox(10, levelChoiceBox);
         vBox.setPadding(new Insets(20));

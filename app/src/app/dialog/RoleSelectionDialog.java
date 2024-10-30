@@ -27,15 +27,19 @@ public class RoleSelectionDialog {
         Dialog<Set<String>> dialog = new Dialog<>();
         dialog.setTitle("Select Roles");
 
-        // Role checkboxes
+        // Role checkboxes with style classes for consistent styling
         CheckBox studentCheckBox = new CheckBox("Student");
+        studentCheckBox.getStyleClass().add("role-checkbox");
+
         CheckBox instructorCheckBox = new CheckBox("Instructor");
+        instructorCheckBox.getStyleClass().add("role-checkbox");
 
         VBox vBox = new VBox(10, studentCheckBox, instructorCheckBox);
         vBox.setPadding(new Insets(20));
 
         dialog.getDialogPane().setContent(vBox);
 
+        // OK and Cancel buttons
         ButtonType okButtonType = new ButtonType("OK", ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
 
