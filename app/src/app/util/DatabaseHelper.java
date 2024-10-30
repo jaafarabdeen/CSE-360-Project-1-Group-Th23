@@ -402,10 +402,11 @@ public class DatabaseHelper {
      *
      * @param fileName The name of the backup file.
      * @param merge If true, merges backup entries with current entries; otherwise, deletes current entries before restoring.
+     * @param group The group name to filter by; if null, restores all articles.
      * @throws SQLException if an error occurs during article restoration.
      * @throws IOException if an error occurs during file reading.
      */
-    public void restoreArticles(String fileName, boolean merge) throws SQLException, IOException, Exception {
+    public void restoreArticles(String fileName, boolean merge, String group) throws SQLException, IOException, Exception {
         if (!merge) {
             String clearQuery = "DELETE FROM help_articles";
             try (Statement stmt = connection.createStatement()) {
@@ -429,6 +430,12 @@ public class DatabaseHelper {
                 String[] fields = articleData.split("§", 8);
 
                 if (fields.length != 8) continue;
+
+                // Check if the article belongs to the specified group (if group filtering is enabled)
+                Set<String> groups = Set.of(fields[5].split(","));
+                if (group != null && !groups.contains(group)) {
+                    continue; // Skip articles not in the specified group
+                }
 
                 // Insert the article into the database if it doesn't exist already (use title for uniqueness in this example)
                 if (!merge || !doesArticleExist(fields[0])) {
