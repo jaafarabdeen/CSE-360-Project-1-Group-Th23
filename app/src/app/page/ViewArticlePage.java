@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -17,6 +17,9 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import app.HelpArticle;
+import app.User;
 
 /**
  * The ViewArticlePage class allows users to view the details of a help article.

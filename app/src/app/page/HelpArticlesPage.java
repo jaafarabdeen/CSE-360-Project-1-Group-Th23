@@ -1,11 +1,14 @@
-package app;
+package app.page;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.ContextMenu;
@@ -22,6 +25,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import app.HelpArticle;
+import app.User;
+import app.cell.HelpArticleCell;
+import app.util.DatabaseHelper;
+import app.util.HelpArticleDatabase;
 
 /**
  * The HelpArticlesPage class allows users to view and manage help articles.
@@ -100,20 +109,46 @@ public class HelpArticlesPage {
 
         // Restore button
         Button restoreButton = createButton("Restore Articles", 300, 50, buttonStyle, e -> {
-            FileChooser fileChooser = new FileChooser();
+        	FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File");
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
-                try {
-                    databaseHelper.restoreArticles(file.getAbsolutePath());
-                    // Reload articles from the database after restore
-                    allArticles.clear();
-                    allArticles.addAll(HelpArticleDatabase.getArticles());
-                    // Refresh ListView with the updated articles
-                    articlesListView.getItems().setAll(filterArticles(searchField.getText()));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                // Display a dialog to choose the restore method (merge or overwrite)
+                Alert methodAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                methodAlert.setTitle("Restore Options");
+                methodAlert.setHeaderText("Choose Restore Method");
+                methodAlert.setContentText("Do you want to merge with current entries or overwrite them?");
+                
+                ButtonType mergeOption = new ButtonType("Merge");
+                ButtonType overwriteOption = new ButtonType("Overwrite");
+                ButtonType cancelOption = new ButtonType("Cancel", ButtonType.CANCEL.getButtonData());
+
+                methodAlert.getButtonTypes().setAll(mergeOption, overwriteOption, cancelOption);
+
+                methodAlert.showAndWait().ifPresent(methodResponse -> {
+                    if (methodResponse == cancelOption) return;
+                    boolean merge = methodResponse == mergeOption;
+
+                    // Display another dialog to specify group filter or restore all
+                    TextInputDialog groupDialog = new TextInputDialog();
+                    groupDialog.setTitle("Group Filter");
+                    groupDialog.setHeaderText("Restore Specific Group");
+                    groupDialog.setContentText("Enter group name to filter by (leave blank for all):");
+
+                    groupDialog.showAndWait().ifPresent(group -> {
+                        try {
+                            // Call restoreArticles with the chosen options
+                            databaseHelper.restoreArticles(file.getAbsolutePath(), merge, group.isEmpty() ? null : group);
+                            // Reload articles from the database after restore
+                            allArticles.clear();
+                            allArticles.addAll(HelpArticleDatabase.getArticles());
+                            // Refresh ListView with the updated articles
+                            articlesListView.getItems().setAll(filterArticles(searchField.getText()));
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+                });
             }
         });
 

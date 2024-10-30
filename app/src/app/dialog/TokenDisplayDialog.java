@@ -1,4 +1,4 @@
-package app;
+package app.dialog;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;

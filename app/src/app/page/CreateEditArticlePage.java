@@ -1,4 +1,4 @@
-package app;
+package app.page;
 
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -13,6 +13,10 @@ import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import java.util.HashSet;
 import java.util.Set;
+
+import app.HelpArticle;
+import app.User;
+import app.util.HelpArticleDatabase;
 
 /**
  * The CreateEditArticlePage class allows admins and instructors to create or edit help articles.
@@ -144,8 +148,15 @@ public class CreateEditArticlePage {
             }
         });
 
+        // Back button
+        Button backButton = new Button("Back");
+        backButton.setPrefWidth(600);
+        backButton.setPrefHeight(50);
+        backButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
+        backButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
+
         // Layout using VBox
-        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, referenceLinksArea, saveButton, messageLabel);
+        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, referenceLinksArea, saveButton, backButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
         vBox.setStyle("-fx-background-color: #3b5998;");

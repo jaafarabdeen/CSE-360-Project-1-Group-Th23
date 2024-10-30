@@ -1,7 +1,8 @@
-package app;
+package app.util;
 
 import java.util.Collection;
-import app.DatabaseHelper;
+import app.HelpArticle;
+
 import java.sql.SQLException;
 
 /**

@@ -1,10 +1,11 @@
-package app;
+package app.cell;
 
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import app.HelpArticle;
 import javafx.geometry.Pos;
 
 /**

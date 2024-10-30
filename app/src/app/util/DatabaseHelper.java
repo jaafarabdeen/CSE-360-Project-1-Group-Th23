@@ -1,4 +1,4 @@
-package app;
+package app.util;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Base64;
 import Encryption.EncryptionHelper;
+import app.HelpArticle;
+import app.User;
 
 /**
  * The DatabaseHelper class provides methods to interact with the HelpArticle and User databases.
@@ -25,7 +27,7 @@ public class DatabaseHelper {
 
     // JDBC driver name and database URL 
     static final String JDBC_DRIVER = "org.h2.Driver";   
-    static final String DB_URL = "jdbc:h2:../database/appDatabase";  
+    static final String DB_URL = "jdbc:h2:./database/appDatabase";  
 
     //  Database credentials 
     static final String USER = "sa"; 
@@ -399,13 +401,17 @@ public class DatabaseHelper {
      * Restores articles from a specified backup file.
      *
      * @param fileName The name of the backup file.
+     * @param merge If true, merges backup entries with current entries; otherwise, deletes current entries before restoring.
+     * @param group The group name to filter by; if null, restores all articles.
      * @throws SQLException if an error occurs during article restoration.
-     * @throws IOException  if an error occurs during file reading.
+     * @throws IOException if an error occurs during file reading.
      */
-    public void restoreArticles(String fileName) throws SQLException, IOException, Exception {
-        String clearQuery = "DELETE FROM help_articles";
-        try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(clearQuery);
+    public void restoreArticles(String fileName, boolean merge, String group) throws SQLException, IOException, Exception {
+        if (!merge) {
+            String clearQuery = "DELETE FROM help_articles";
+            try (Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate(clearQuery);
+            }
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
@@ -425,20 +431,49 @@ public class DatabaseHelper {
 
                 if (fields.length != 8) continue;
 
-                String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, reference_links, author_username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
-                    pstmt.setString(1, fields[0]);
-                    pstmt.setString(2, fields[1]);
-                    pstmt.setString(3, fields[2]);
-                    pstmt.setString(4, fields[3]);
-                    pstmt.setString(5, fields[4]);
-                    pstmt.setString(6, fields[5]);
-                    pstmt.setString(7, fields[6]);
-                    pstmt.setString(8, fields[7]);
-                    pstmt.executeUpdate();
+                // Check if the article belongs to the specified group (if group filtering is enabled)
+                Set<String> groups = Set.of(fields[5].split(","));
+                if (group != null && !groups.contains(group)) {
+                    continue; // Skip articles not in the specified group
+                }
+
+                // Insert the article into the database if it doesn't exist already (use title for uniqueness in this example)
+                if (!merge || !doesArticleExist(fields[0])) {
+                    String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, groups, reference_links, author_username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
+                        pstmt.setString(1, fields[0]);
+                        pstmt.setString(2, fields[1]);
+                        pstmt.setString(3, fields[2]);
+                        pstmt.setString(4, fields[3]);
+                        pstmt.setString(5, fields[4]);
+                        pstmt.setString(6, fields[5]);
+                        pstmt.setString(7, fields[6]);
+                        pstmt.setString(8, fields[7]);
+                        pstmt.executeUpdate();
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Checks if an article exists by its title.
+     *
+     * @param title The title of the article.
+     * @return True if the article exists, false otherwise.
+     * @throws SQLException if an error occurs during the check.
+     */
+    private boolean doesArticleExist(String title) throws SQLException {
+        String query = "SELECT COUNT(*) AS count FROM help_articles WHERE title = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, title);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0;
+                }
+            }
+        }
+        return false;
     }
     
     /**
