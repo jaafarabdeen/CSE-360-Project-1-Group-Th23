@@ -1,0 +1,196 @@
+.root {
+    -fx-font-family: 'Roboto', sans-serif;
+    -fx-background-color: #2e3440;
+}
+
+.label-title {
+    -fx-font-size: 56px;
+    -fx-text-fill: #ffffff;
+}
+
+.label-subtitle {
+    -fx-font-size: 40px;
+    -fx-text-fill: #ffffff;
+}
+
+.label-subheading {
+    -fx-font-size: 20px;
+    -fx-text-fill: #ffffff;
+}
+
+.text-field, .password-field {
+    -fx-background-color: #3b4252;
+    -fx-text-fill: #d8dee9;
+    -fx-prompt-text-fill: #6d707a;
+    -fx-font-size: 20px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.button {
+    -fx-background-color: #5865F2;
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-width: 600;
+    -fx-pref-height: 50;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.5, 0, 0);
+}
+
+.button:hover {
+    -fx-background-color: #4753d9;
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button:pressed {
+    -fx-background-color: #3742b3;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.message-label {
+    -fx-text-fill: #ff5555;
+    -fx-font-size: 28px;
+}
+
+.article-title {
+    -fx-font-size: 24px;
+    -fx-text-fill: #000000;
+    -fx-font-family: Arial;
+}
+
+.article-description {
+    -fx-font-size: 18px;
+    -fx-text-fill: #a0a0a0;
+    -fx-font-family: Arial;
+}
+
+/* ListView Background */
+.list-view {
+    -fx-background-color: transparent;
+}
+
+/* Base Cell Style */
+.cell {
+    -fx-padding: 10;
+    -fx-background-insets: 0;
+    -fx-background-color: #3b4252; /* Dark base color */
+    -fx-text-fill: #d8dee9; /* Default text color */
+}
+
+/* Hover effect for each cell */
+.cell:hover {
+    -fx-background-color: #4c566a; /* Lighter dark color for hover */
+}
+
+/* Selected cell style */
+.cell:selected {
+    -fx-background-color: #5865F2; /* Accent color for selected state */
+    -fx-text-fill: white; /* Ensure text remains visible on selection */
+}
+
+/* Base styling for each article cell */
+.help-article-cell {
+    -fx-padding: 10;
+    -fx-background-color: #3b4252; /* Dark base background */
+    -fx-text-fill: #d8dee9; /* Text color for readability */
+}
+
+/* Hover effect for each cell */
+.help-article-cell:hover {
+    -fx-background-color: #4c566a; /* Slightly lighter background for hover */
+}
+
+/* Selected cell style */
+.help-article-cell:selected {
+    -fx-background-color: #5865F2; /* Accent color for selected */
+    -fx-text-fill: white; /* Ensure text is visible on selection */
+}
+
+/* Styling for title and description within HelpArticleCell */
+.article-title {
+    -fx-font-size: 24px;
+    -fx-text-fill: #ffffff; /* White title text */
+}
+
+.article-description {
+    -fx-font-size: 18px;
+    -fx-text-fill: #a0a0a0; /* Gray description text */
+}
+
+/* Label styling within UserCell */
+.user-username {
+    -fx-font-size: 26px;
+}
+
+.user-roles, .user-level {
+    -fx-font-size: 18px;
+}
+
+.level-choice-box {
+    -fx-font-size: 16px;
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.role-checkbox {
+    -fx-font-size: 16px;
+    -fx-text-fill: #333333;
+    -fx-padding: 5 10;
+}
+
+.text-area {
+    -fx-font-size: 20px;
+    -fx-font-family: 'Roboto', sans-serif;
+    -fx-text-fill: #d8dee9;
+    -fx-background-color: #3b4252;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-border-color: #4c566a;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-padding: 10;
+}
+
+/* Ensures the text input control background matches custom styles */
+.text-area .content {
+    -fx-background-color: #3b4252;
+}
+
+.text-area .scroll-bar:vertical .thumb,
+.text-area .scroll-bar:horizontal .thumb {
+    -fx-background-color: #5865F2;
+}
+
+.text-area:focused {
+    -fx-border-color: #5865F2;
+}
+
+.text-area:focused .content {
+    -fx-background-color: #4c566a; 
+}
+
+.link-button {
+    -fx-background-color: #5865F2;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-padding: 5 10;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-text-alignment: center;
+}
+
+.link-button:hover {
+    -fx-background-color: #4753d9;
+    -fx-underline: true;
+}
+
+.link-button:pressed {
+    -fx-background-color: #3742b3;
+}

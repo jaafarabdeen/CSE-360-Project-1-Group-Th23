@@ -7,9 +7,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import app.User;
+import app.util.UIHelper;
 import javafx.geometry.Insets;
 
 /**
@@ -18,7 +17,6 @@ import javafx.geometry.Insets;
  * 
  * Author:
  *     - Ayush Kaushik
- *     
  */
 public class FinishSettingUpAccountPage {
     private final Stage stage;
@@ -38,55 +36,30 @@ public class FinishSettingUpAccountPage {
      * Displays the account setup UI and handles user interactions.
      */
     public void show() {
-        String fieldStyle = "-fx-background-color: #40444b; -fx-text-fill: #ffffff; -fx-font-size: 24;";
-        String buttonStyle = "-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;";
-
         // Title label
         Label titleLabel = new Label("Finish Setting Up Your Account");
-        titleLabel.setFont(new Font("Arial", 56));
-        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.getStyleClass().add("label-title");
 
         // Email field
-        TextField emailField = new TextField();
-        emailField.setPromptText("EMAIL ADDRESS");
-        emailField.setMaxWidth(600);
-        emailField.setStyle(fieldStyle);
+        TextField emailField = UIHelper.createTextField("EMAIL ADDRESS");
 
         // First Name field
-        TextField firstNameField = new TextField();
-        firstNameField.setPromptText("FIRST NAME");
-        firstNameField.setMaxWidth(600);
-        firstNameField.setStyle(fieldStyle);
+        TextField firstNameField = UIHelper.createTextField("FIRST NAME");
 
         // Middle Name field
-        TextField middleNameField = new TextField();
-        middleNameField.setPromptText("MIDDLE NAME");
-        middleNameField.setMaxWidth(600);
-        middleNameField.setStyle(fieldStyle);
+        TextField middleNameField = UIHelper.createTextField("MIDDLE NAME");
 
         // Last Name field
-        TextField lastNameField = new TextField();
-        lastNameField.setPromptText("LAST NAME");
-        lastNameField.setMaxWidth(600);
-        lastNameField.setStyle(fieldStyle);
+        TextField lastNameField = UIHelper.createTextField("LAST NAME");
 
         // Preferred Name field
-        TextField preferredNameField = new TextField();
-        preferredNameField.setPromptText("PREFERRED FIRST NAME (Optional)");
-        preferredNameField.setMaxWidth(600);
-        preferredNameField.setStyle(fieldStyle);
+        TextField preferredNameField = UIHelper.createTextField("PREFERRED FIRST NAME (Optional)");
 
         // Message label for error messages
-        Label messageLabel = new Label();
-        messageLabel.setTextFill(Color.web("#ff5555"));
-        messageLabel.setFont(new Font("Arial", 28));
+        Label messageLabel = UIHelper.createMessageLabel();
 
         // Save button
-        Button saveButton = new Button("Save");
-        saveButton.setPrefWidth(600);
-        saveButton.setPrefHeight(50);
-        saveButton.setStyle(buttonStyle);
-        saveButton.setOnAction(e -> {
+        Button saveButton = UIHelper.createButton("Save", e -> {
             String email = emailField.getText();
             String firstName = firstNameField.getText();
             String middleName = middleNameField.getText();
@@ -94,7 +67,7 @@ public class FinishSettingUpAccountPage {
             String preferredName = preferredNameField.getText();
 
             if (email.isEmpty() || firstName.isEmpty() || lastName.isEmpty()) {
-                messageLabel.setText("Please fill in the required fields.");
+                UIHelper.setMessage(messageLabel, "Please fill in the required fields.", true);
             } else {
                 user.setEmail(email);
                 user.setFirstName(firstName);
@@ -124,10 +97,9 @@ public class FinishSettingUpAccountPage {
         VBox vBox = new VBox(20, titleLabel, emailField, firstNameField, middleNameField, lastNameField, preferredNameField, saveButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(60));
-        vBox.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(vBox, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(vBox, 1920, 1080);
         stage.setTitle("Finish Setting Up Account");
         stage.setScene(scene);
         stage.show();

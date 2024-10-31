@@ -7,9 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import app.User;
+import app.util.UIHelper;
 import javafx.geometry.Insets;
 
 /**
@@ -38,27 +37,17 @@ public class DashboardPage {
      * Displays the dashboard UI and handles user interactions.
      */
     public void show() {
-        String buttonStyle = "-fx-text-fill: white; -fx-font-size: 24;";
         String welcomeText = "Welcome to the Dashboard, " + user.getPreferredName() + "!";
 
         // Welcome label with user's preferred name
         Label welcomeLabel = new Label(welcomeText);
-        welcomeLabel.setFont(new Font("Arial", 56));
-        welcomeLabel.setTextFill(Color.web("#ffffff"));
+        welcomeLabel.getStyleClass().add("label-title");
 
         // Help Articles button
-        Button helpArticlesButton = new Button("Help Articles");
-        helpArticlesButton.setPrefWidth(600);
-        helpArticlesButton.setPrefHeight(50);
-        helpArticlesButton.setStyle("-fx-background-color: #5865F2; " + buttonStyle);
-        helpArticlesButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
+        Button helpArticlesButton = UIHelper.createButton("Help Articles", e -> new HelpArticlesPage(stage, user).show());
 
         // Logout button
-        Button logoutButton = new Button("Logout");
-        logoutButton.setPrefWidth(600);
-        logoutButton.setPrefHeight(50);
-        logoutButton.setStyle("-fx-background-color: #FF5555; " + buttonStyle);
-        logoutButton.setOnAction(e -> new LoginPage(stage).show());
+        Button logoutButton = UIHelper.createButton("Logout", e -> new LoginPage(stage).show());
 
         // Layout using VBox
         VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, logoutButton);
@@ -68,10 +57,9 @@ public class DashboardPage {
         // Main layout using BorderPane
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(vBox);
-        borderPane.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(borderPane, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(borderPane, 1920, 1080);
         stage.setTitle("Dashboard");
         stage.setScene(scene);
         stage.show();

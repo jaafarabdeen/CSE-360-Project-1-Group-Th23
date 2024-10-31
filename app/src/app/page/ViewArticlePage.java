@@ -4,15 +4,14 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
-import javafx.scene.text.Font;
-import javafx.geometry.Insets;
 import javafx.scene.control.Hyperlink;
+import javafx.geometry.Insets;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -20,6 +19,7 @@ import java.net.URISyntaxException;
 
 import app.HelpArticle;
 import app.User;
+import app.util.UIHelper;
 
 /**
  * The ViewArticlePage class allows users to view the details of a help article.
@@ -45,23 +45,17 @@ public class ViewArticlePage {
      * Displays the article details UI.
      */
     public void show() {
-        String labelStyle = "-fx-text-fill: #ffffff;";
-        String buttonStyle = "-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;";
-
         // Title label
         Label titleLabel = new Label(article.getTitle());
-        titleLabel.setFont(new Font("Arial", 56));
-        titleLabel.setStyle(labelStyle);
-        
-        // Title label
+        titleLabel.getStyleClass().add("label-title");
+
+        // Level label
         Label levelLabel = new Label(article.getLevel());
-        levelLabel.setFont(new Font("Arial", 45));
-        levelLabel.setStyle(labelStyle);
+        levelLabel.getStyleClass().add("label-subheading");
 
         // Description label
         Label descriptionLabel = new Label(article.getDescription());
-        descriptionLabel.setFont(new Font("Arial", 28));
-        descriptionLabel.setStyle(labelStyle);
+        descriptionLabel.getStyleClass().add("label-body");
 
         // Body area
         TextArea bodyArea = new TextArea(article.getBody());
@@ -69,47 +63,39 @@ public class ViewArticlePage {
         bodyArea.setEditable(false);
         bodyArea.setMaxWidth(800);
         bodyArea.setMaxHeight(400);
-        bodyArea.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        bodyArea.getStyleClass().add("text-area-body");
 
-        // Reference links container using HBox for horizontal alignment
-        HBox linksBox = new HBox();
+        // Reference links container
+        HBox linksBox = new HBox(10);
         linksBox.setAlignment(Pos.CENTER);
-        linksBox.setSpacing(10); // Space between links for separation
+        article.getReferenceLinks().forEach(link -> linksBox.getChildren().add(createHyperlink(link)));
 
-        // Iterate through the reference links if they exist
-        for (String link : article.getReferenceLinks()) {
-            Hyperlink hyperlink = new Hyperlink(link);
-            hyperlink.setStyle(
-                "-fx-background-color: #00A4FF; " +  // Same background color as the button
-                "-fx-text-fill: white; " +
-                "-fx-font-size: 18; " +              // Smaller font size
-                "-fx-padding: 5 10; " +              // Smaller padding for a compact look
-                "-fx-background-radius: 5; " +       // Rounded corners
-                "-fx-border-radius: 5; " +
-                "-fx-cursor: hand;"                  // Changes cursor to indicate it's clickable
-            );
-            hyperlink.setOnAction(e -> openLink(link));
-            linksBox.getChildren().add(hyperlink);
-        }
-
-        // Back button
-        Button backButton = new Button("Back");
-        backButton.setPrefWidth(300);
-        backButton.setPrefHeight(50);
-        backButton.setStyle(buttonStyle);
-        backButton.setOnAction(e -> new HelpArticlesPage(stage, user).show());
+        // Back button with custom red style
+        Button backButton = UIHelper.createButton("Back", e -> new HelpArticlesPage(stage, user).show(), "-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
 
         // Layout using VBox
         VBox vBox = new VBox(20, levelLabel, titleLabel, descriptionLabel, bodyArea, linksBox, backButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
-        vBox.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(vBox, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(vBox, 1920, 1080);
         stage.setTitle("View Article");
         stage.setScene(scene);
         stage.show();
+    }
+
+    /**
+     * Creates a clickable hyperlink styled as a button.
+     * 
+     * @param link The URL of the hyperlink.
+     * @return the styled Hyperlink
+     */
+    private Hyperlink createHyperlink(String link) {
+        Hyperlink hyperlink = new Hyperlink(link);
+        hyperlink.getStyleClass().add("link-button");
+        hyperlink.setOnAction(e -> openLink(link));
+        return hyperlink;
     }
 
     /**
@@ -120,7 +106,7 @@ public class ViewArticlePage {
         try {
             Desktop.getDesktop().browse(new URI(link));
         } catch (URISyntaxException | IOException e) {
-        	Alert alert = new Alert(AlertType.ERROR);
+            Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Invalid link");
             alert.setHeaderText("The link you clicked on is not valid.");
             alert.showAndWait();

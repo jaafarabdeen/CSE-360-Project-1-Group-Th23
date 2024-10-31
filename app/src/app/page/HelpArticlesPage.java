@@ -17,8 +17,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 
 import java.io.File;
@@ -31,6 +29,7 @@ import app.User;
 import app.cell.HelpArticleCell;
 import app.util.DatabaseHelper;
 import app.util.HelpArticleDatabase;
+import app.util.UIHelper;
 
 /**
  * The HelpArticlesPage class allows users to view and manage help articles.
@@ -65,18 +64,12 @@ public class HelpArticlesPage {
      * Displays the help articles UI and handles user interactions.
      */
     public void show() {
-        String buttonStyle = "-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 18;";
-        
         // Title label
         Label titleLabel = new Label("Help Articles");
-        titleLabel.setFont(new Font("Arial", 56));
-        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.getStyleClass().add("label-title");
 
         // Search bar
-        TextField searchField = new TextField();
-        searchField.setPromptText("Search...");
-        searchField.setMaxWidth(600);
-        searchField.setStyle("-fx-background-color: #ffffff; -fx-text-fill: #000000; -fx-font-size: 24;");
+        TextField searchField = UIHelper.createTextField("Search...");
 
         // ListView to display articles
         ListView<HelpArticle> articlesListView = new ListView<>();
@@ -93,7 +86,7 @@ public class HelpArticlesPage {
         );
 
         // Backup button
-        Button backupButton = createButton("Backup Articles", 300, 50, buttonStyle, e -> {
+        Button backupButton = UIHelper.createButton("Backup Articles", e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File Location");
             fileChooser.setInitialFileName("Backup-" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH")));
@@ -108,8 +101,8 @@ public class HelpArticlesPage {
         });
 
         // Restore button
-        Button restoreButton = createButton("Restore Articles", 300, 50, buttonStyle, e -> {
-        	FileChooser fileChooser = new FileChooser();
+        Button restoreButton = UIHelper.createButton("Restore Articles", e -> {
+            FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select Backup File");
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
@@ -173,12 +166,12 @@ public class HelpArticlesPage {
         });
 
         // Create Article button for admins and instructors
-        Button createArticleButton = createButton("Create Article", 300, 50, buttonStyle, e -> 
+        Button createArticleButton = UIHelper.createButton("Create Article", e -> 
             new CreateEditArticlePage(stage, user, null).show()
         );
 
         // Back button
-        Button backButton = createButton("Back", 300, 50, "-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 18;", e -> {
+        Button backButton = UIHelper.createButton("Back", e -> {
             if (user.hasRole("Admin")) {
                 new AdminPage(stage, user).show();
             } else {
@@ -195,10 +188,9 @@ public class HelpArticlesPage {
         }
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
-        vBox.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(vBox, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(vBox, 1920, 1080);
         stage.setTitle("Help Articles");
         stage.setScene(scene);
         stage.show();
@@ -218,15 +210,6 @@ public class HelpArticlesPage {
                         article.getDescription().toLowerCase().contains(keyword.toLowerCase()) ||
                         article.getKeywords().stream().anyMatch(k -> k.toLowerCase().contains(keyword.toLowerCase())))
                 .collect(Collectors.toList());
-    }
-
-    private Button createButton(String text, int width, int height, String style, javafx.event.EventHandler<javafx.event.ActionEvent> action) {
-        Button button = new Button(text);
-        button.setPrefWidth(width);
-        button.setPrefHeight(height);
-        button.setStyle(style);
-        button.setOnAction(action);
-        return button;
     }
 
     private ContextMenu createContextMenu(ListView<HelpArticle> articlesListView) {

@@ -10,12 +10,14 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.geometry.Insets;
 import java.util.UUID;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.sql.SQLException;
 
 import app.User;
 import app.cell.UserCell;
@@ -24,11 +26,7 @@ import app.dialog.RoleSelectionDialog;
 import app.dialog.TokenDisplayDialog;
 import app.util.DatabaseHelper;
 import app.util.Invitation;
-
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.sql.SQLException;
+import app.util.UIHelper;
 
 /**
  * The AdminPage class represents the admin dashboard where the admin can manage users.
@@ -65,15 +63,10 @@ public class AdminPage {
     public void show() {
         // Welcome label
         Label welcomeLabel = new Label("Welcome to the Admin Page!");
-        welcomeLabel.setFont(new Font("Arial", 56));
-        welcomeLabel.setTextFill(Color.web("#ffffff"));
+        welcomeLabel.getStyleClass().add("label-title");
 
         // Generate Token Button
-        Button generateTokenButton = new Button("Generate Invitation Token");
-        generateTokenButton.setPrefWidth(600);
-        generateTokenButton.setPrefHeight(50);
-        generateTokenButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        generateTokenButton.setOnAction(e -> {
+        Button generateTokenButton = UIHelper.createButton("Generate Invitation Token", e -> {
             // Show role selection dialog
             RoleSelectionDialog roleDialog = new RoleSelectionDialog();
             Set<String> selectedRoles = roleDialog.showAndWait();
@@ -91,8 +84,7 @@ public class AdminPage {
 
         // Member List Label
         Label memberListLabel = new Label("Member List");
-        memberListLabel.setFont(new Font("Arial", 48));
-        memberListLabel.setTextFill(Color.web("#ffffff"));
+        memberListLabel.getStyleClass().add("label-subtitle");
 
         // ListView to display members
         ListView<User> memberListView = new ListView<>();
@@ -110,6 +102,7 @@ public class AdminPage {
 
         // Define display style for each user
         memberListView.setCellFactory(param -> new UserCell());
+        memberListView.getStyleClass().add("list-view");
 
         // Context menu for user actions
         ContextMenu contextMenu = new ContextMenu();
@@ -172,31 +165,17 @@ public class AdminPage {
         });
 
         // Additional Buttons
-        Button helpArticlesButton = new Button("Help Articles");
-        helpArticlesButton.setPrefWidth(600);
-        helpArticlesButton.setPrefHeight(50);
-        helpArticlesButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        helpArticlesButton.setOnAction(e -> {
+        Button helpArticlesButton = UIHelper.createButton("Help Articles", e -> {
             new HelpArticlesPage(stage, user).show();
         });
 
-        // Finish Setting Up Account Button
-        Button finishSetupButton = new Button("Finish Setting Up Your Account");
-        finishSetupButton.setPrefWidth(600);
-        finishSetupButton.setPrefHeight(50);
-        finishSetupButton.setStyle("-fx-background-color: #5865F2; -fx-text-fill: white; -fx-font-size: 24;");
-        finishSetupButton.setOnAction(e -> {
+        Button finishSetupButton = UIHelper.createButton("Finish Setting Up Your Account", e -> {
             new FinishSettingUpAccountPage(stage, user).show();
         });
 
-        // Logout Button
-        Button logoutButton = new Button("Logout");
-        logoutButton.setPrefWidth(300);
-        logoutButton.setPrefHeight(50);
-        logoutButton.setStyle("-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
-        logoutButton.setOnAction(e -> {
+        Button logoutButton = UIHelper.createButton("Logout", e -> {
             new LoginPage(stage).show();
-        });
+        }, "-fx-background-color: #FF5555;");
 
         // Layout for buttons
         HBox buttonBox = new HBox(20, generateTokenButton, helpArticlesButton, finishSetupButton, logoutButton);
@@ -210,10 +189,9 @@ public class AdminPage {
         // Main layout using BorderPane
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(vBox);
-        borderPane.setStyle("-fx-background-color: #3b5998;");
 
-        // Create the scene with 1920x1080 resolution
-        Scene scene = new Scene(borderPane, 1920, 1080);
+        // Create the scene with CSS styling
+        Scene scene = UIHelper.createStyledScene(borderPane, 1920, 1080);
         stage.setTitle("Admin Page");
         stage.setScene(scene);
         stage.show();
