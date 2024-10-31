@@ -19,7 +19,7 @@ public class HelpArticleCell extends ListCell<HelpArticle> {
     private final VBox vBox;
 
     public HelpArticleCell() {
-        // Initialize labels and layout only once
+        // Initialize labels and layout
         titleLabel = new Label();
         titleLabel.getStyleClass().add("article-title");
 
@@ -28,6 +28,9 @@ public class HelpArticleCell extends ListCell<HelpArticle> {
 
         vBox = new VBox(5, titleLabel, descriptionLabel);
         vBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Apply CSS class to the entire cell for hover/selected effects
+        this.getStyleClass().add("help-article-cell");
     }
 
     @Override

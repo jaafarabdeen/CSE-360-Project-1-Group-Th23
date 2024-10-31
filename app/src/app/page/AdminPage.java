@@ -102,6 +102,7 @@ public class AdminPage {
 
         // Define display style for each user
         memberListView.setCellFactory(param -> new UserCell());
+        memberListView.getStyleClass().add("list-view");
 
         // Context menu for user actions
         ContextMenu contextMenu = new ContextMenu();

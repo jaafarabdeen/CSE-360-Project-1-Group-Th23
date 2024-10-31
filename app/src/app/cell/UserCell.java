@@ -20,12 +20,13 @@ public class UserCell extends ListCell<User> {
     private final HBox hBox = new HBox(20, usernameLabel, rolesLabel, levelLabel);
 
     public UserCell() {
-        // Apply CSS classes for consistent styling
-        usernameLabel.getStyleClass().add("user-username");
-        rolesLabel.getStyleClass().add("user-roles");
-        levelLabel.getStyleClass().add("user-level");
+        // Apply CSS class to rely on stylesheet for hover and selected states
+        usernameLabel.setStyle("-fx-text-fill: #ffffff;");
+        rolesLabel.setStyle("-fx-text-fill: #a0a0a0;");
+        levelLabel.setStyle("-fx-text-fill: #a0a0a0;");
 
         hBox.setAlignment(Pos.CENTER_LEFT);
+        hBox.setStyle("-fx-padding: 10;");
     }
 
     @Override
