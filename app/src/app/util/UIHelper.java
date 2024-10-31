@@ -1,6 +1,5 @@
 package app.util;
 
-import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
