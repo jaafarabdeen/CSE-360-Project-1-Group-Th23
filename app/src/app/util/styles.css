@@ -8,6 +8,16 @@
     -fx-text-fill: #ffffff;
 }
 
+.label-subtitle {
+    -fx-font-size: 40px;
+    -fx-text-fill: #ffffff;
+}
+
+.label-subheading {
+    -fx-font-size: 20px;
+    -fx-text-fill: #ffffff;
+}
+
 .text-field, .password-field {
     -fx-background-color: #3b4252;
     -fx-text-fill: #d8dee9;

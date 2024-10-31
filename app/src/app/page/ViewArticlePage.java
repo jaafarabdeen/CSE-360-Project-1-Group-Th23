@@ -51,7 +51,7 @@ public class ViewArticlePage {
 
         // Level label
         Label levelLabel = new Label(article.getLevel());
-        levelLabel.getStyleClass().add("label-subtitle");
+        levelLabel.getStyleClass().add("label-subheading");
 
         // Description label
         Label descriptionLabel = new Label(article.getDescription());
