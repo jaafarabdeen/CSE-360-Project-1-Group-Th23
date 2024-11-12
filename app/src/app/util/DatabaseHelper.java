@@ -30,8 +30,8 @@ public class DatabaseHelper {
     static final String DB_URL = "jdbc:h2:./database/appDatabase";  
 
     //  Database credentials 
-    static final String USER = "sa"; 
-    static final String PASS = ""; 
+    static final String USER = "CSE360Project1"; 
+    static final String PASS = "GroupTh23"; 
 
     private Connection connection = null;
     private Statement statement = null;
