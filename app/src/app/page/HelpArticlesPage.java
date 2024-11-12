@@ -64,6 +64,7 @@ public class HelpArticlesPage {
      * Displays the help articles UI and handles user interactions.
      */
     public void show() {
+    	stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
         // Title label
         Label titleLabel = new Label("Help Articles");
         titleLabel.getStyleClass().add("label-title");

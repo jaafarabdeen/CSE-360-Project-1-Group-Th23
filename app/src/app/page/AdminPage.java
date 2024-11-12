@@ -61,6 +61,7 @@ public class AdminPage {
      * Displays the admin page UI and handles admin interactions.
      */
     public void show() {
+    	stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
         // Welcome label
         Label welcomeLabel = new Label("Welcome to the Admin Page!");
         welcomeLabel.getStyleClass().add("label-title");

@@ -48,6 +48,7 @@ public class AccountCreationPage {
      * Displays the account creation UI and handles user interactions.
      */
     public void show() {
+    	stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
         // Title label
         Label titleLabel = new Label("Create Your Account");
         titleLabel.getStyleClass().add("label-title");
