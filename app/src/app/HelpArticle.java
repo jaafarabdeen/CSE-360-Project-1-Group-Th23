@@ -8,6 +8,7 @@ import java.util.HashSet;
  * Each article has a unique identifier, title, description, body, level, keywords, and groups.
  * Articles can be created, viewed, edited, and deleted by admins and instructors.
  * Students can view articles based on their level.
+ * Articles can belong to special access groups where the body is encrypted, and access is restricted.
  * 
  * Author:
  *     - Ayush Kaushik
@@ -20,27 +21,27 @@ public class HelpArticle {
     private String body;
     private String level; // Beginner, Intermediate, Advanced, Expert
     private Set<String> keywords = new HashSet<>();
-    private Set<String> groups = new HashSet<>();
+    private String groupName; // null if not in any special access group
     private final String authorUsername;
     private Set<String> referenceLinks;
 
-    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> groups, Set<String> referenceLinks, String authorUsername) {
-        this(0, title, description, body, level, keywords, groups, referenceLinks, authorUsername);
+    // Constructor for creating a new article
+    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> referenceLinks, String authorUsername, String groupName) {
+        this(0, title, description, body, level, keywords, referenceLinks, authorUsername, groupName);
     }
-    
-    // Constructor for fetching existing article with ID
-    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> groups, Set<String> referenceLinks, String authorUsername) {
+
+    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> referenceLinks, String authorUsername, String groupName) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.body = body;
         this.level = level;
-        this.keywords = (keywords != null) ? keywords : new HashSet<>();
-        this.groups = (groups != null) ? groups : new HashSet<>();
-        this.referenceLinks = referenceLinks != null ? referenceLinks : new HashSet<>();
+        this.keywords = keywords;
+        this.referenceLinks = referenceLinks;
         this.authorUsername = authorUsername;
+        this.groupName = groupName;
     }
-    
+
     // Setters for all fields except immutable fields like authorUsername
     public void setId(long id) {
         this.id = id;
@@ -91,23 +92,23 @@ public class HelpArticle {
         this.keywords = (keywords != null) ? keywords : new HashSet<>();
     }
 
-    public Set<String> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(Set<String> groups) {
-        this.groups = (groups != null) ? groups : new HashSet<>();
-    }
-    
     public Set<String> getReferenceLinks() {
         return referenceLinks;
     }
-    
+
     public void setReferenceLinks(Set<String> referenceLinks) {
         this.referenceLinks = referenceLinks;
     }
 
     public String getAuthorUsername() {
         return authorUsername;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }

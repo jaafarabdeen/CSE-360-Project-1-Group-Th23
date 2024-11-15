@@ -1,6 +1,8 @@
 package Encryption;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Security;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -34,5 +36,25 @@ public class EncryptionHelper {
 		cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(initializationVector));
 		return cipher.doFinal(cipherText);
 	}
+	
+	/**
+     * Attempts to decrypt the article body if it is encrypted.
+     *
+     * @param encryptedBody The possibly encrypted body text.
+     * @return The decrypted body text, or the original text if decryption fails.
+     * @throws Exception if decryption fails or if the body is not properly formatted.
+     */
+    public String decryptBody(String encryptedBody) throws Exception {
+        // Split the encrypted body format (assuming it has the format iv:encryptedBody)
+        String[] parts = encryptedBody.split(":");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid encrypted body format.");
+        }
+
+        byte[] iv = Base64.getDecoder().decode(parts[0]);
+        byte[] encryptedData = Base64.getDecoder().decode(parts[1]);
+        byte[] decryptedData = decrypt(encryptedData, iv);
+        return new String(decryptedData, StandardCharsets.UTF_8);
+    }
 	
 }

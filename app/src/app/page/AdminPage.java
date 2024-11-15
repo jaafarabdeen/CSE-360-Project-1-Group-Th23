@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.sql.SQLException;
 
 import app.User;
@@ -27,15 +28,14 @@ import app.dialog.TokenDisplayDialog;
 import app.util.DatabaseHelper;
 import app.util.Invitation;
 import app.util.UIHelper;
+import app.util.Group;
 
 /**
- * The AdminPage class represents the admin dashboard where the admin can manage users.
- * Admin can view the member list, generate invitation tokens, delete accounts, and change user roles.
- * The member list is displayed with users separated by their roles.
+ * The AdminPage class represents the admin dashboard where the admin can manage users and special access groups.
+ * Admin can view the member list, generate invitation tokens, delete accounts, change user roles,
+ * and manage special access groups.
  * 
- * This class enhances the admin functionalities as per the requirements.
- * 
- * @author
+ * Author:
  *     - Ayush Kaushik
  *     - Jaafar Abdeen
  */
@@ -61,7 +61,7 @@ public class AdminPage {
      * Displays the admin page UI and handles admin interactions.
      */
     public void show() {
-    	stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
+        stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
         // Welcome label
         Label welcomeLabel = new Label("Welcome to the Admin Page!");
         welcomeLabel.getStyleClass().add("label-title");
@@ -165,6 +165,11 @@ public class AdminPage {
             }
         });
 
+        // Manage Groups Button
+        Button manageGroupsButton = UIHelper.createButton("Manage Groups", e -> {
+            new GroupManagementPage(stage, user).show();
+        });
+
         // Additional Buttons
         Button helpArticlesButton = UIHelper.createButton("Help Articles", e -> {
             new HelpArticlesPage(stage, user).show();
@@ -179,7 +184,7 @@ public class AdminPage {
         }, "-fx-background-color: #FF5555;");
 
         // Layout for buttons
-        HBox buttonBox = new HBox(20, generateTokenButton, helpArticlesButton, finishSetupButton, logoutButton);
+        HBox buttonBox = new HBox(20, generateTokenButton, manageGroupsButton, helpArticlesButton, finishSetupButton, logoutButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         // Main layout using VBox

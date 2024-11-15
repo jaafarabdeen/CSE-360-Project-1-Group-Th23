@@ -3,6 +3,8 @@ package app.util;
 import javafx.animation.ScaleTransition;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -153,6 +155,19 @@ public class UIHelper {
         textArea.setMaxHeight(maxHeight);
         textArea.getStyleClass().add("text-area");
         return textArea;
+    }
+    
+    /**
+     * Shows an error dialog with the specified title and message.
+     * 
+     * @param title The title of the dialog.
+     * @param message The message content of the dialog.
+     */
+    public static void showErrorDialog(String title, String message) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(message);
+        alert.showAndWait();
     }
 }
 
