@@ -169,5 +169,20 @@ public class UIHelper {
         alert.setHeaderText(message);
         alert.showAndWait();
     }
+    
+    /**
+     * Displays an information dialog with the specified title and message.
+     *
+     * @param title   The title of the dialog.
+     * @param message The message content of the dialog.
+     */
+    public static void showInfoDialog(String title, String message) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 }
 

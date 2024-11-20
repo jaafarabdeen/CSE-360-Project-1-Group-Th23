@@ -99,7 +99,6 @@ public class DatabaseHelper {
                 + "roles VARCHAR(255))";
         statement.execute(invitationTable);
 
-        // Create groups table
         String groupTable = "CREATE TABLE IF NOT EXISTS groups ("
                 + "name VARCHAR(255) PRIMARY KEY, "
                 + "admins VARCHAR(1000), "
@@ -108,6 +107,15 @@ public class DatabaseHelper {
                 + "students VARCHAR(1000), "
                 + "article_ids VARCHAR(1000))";
         statement.execute(groupTable);
+        
+        String messagesTable = "CREATE TABLE IF NOT EXISTS help_messages ("
+                + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                + "username VARCHAR(255), "
+                + "message_type VARCHAR(50), "
+                + "message_content TEXT, "
+                + "search_terms VARCHAR(255), "
+                + "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+        statement.execute(messagesTable);
     }
 
     /**
@@ -246,6 +254,53 @@ public class DatabaseHelper {
             }
         }
         return false;
+    }
+    
+    /**
+     * Stores a help message sent by a user into the database.
+     *
+     * @param username      The username of the user sending the message.
+     * @param messageType   The type of the message ("Generic" or "Specific").
+     * @param messageContent The content of the message.
+     * @param searchTerms   The search terms used by the user (if any).
+     */
+    public void storeHelpMessage(String username, String messageType, String messageContent, String searchTerms) {
+        String insertMessage = "INSERT INTO help_messages (username, message_type, message_content, search_terms) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertMessage)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, messageType);
+            pstmt.setString(3, messageContent);
+            pstmt.setString(4, searchTerms);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Retrieves all help messages from the database.
+     *
+     * @return A list of formatted help messages.
+     */
+    public List<String> getAllHelpMessages() {
+        List<String> messages = new ArrayList<>();
+        String query = "SELECT * FROM help_messages ORDER BY timestamp DESC";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                String message = "[" + rs.getTimestamp("timestamp") + "] "
+                        + rs.getString("username") + " (" + rs.getString("message_type") + "): "
+                        + rs.getString("message_content");
+                String searchTerms = rs.getString("search_terms");
+                if (searchTerms != null && !searchTerms.isEmpty()) {
+                    message += " | Search Terms: " + searchTerms;
+                }
+                messages.add(message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return messages;
     }
 
     /**

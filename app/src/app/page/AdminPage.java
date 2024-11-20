@@ -176,13 +176,19 @@ public class AdminPage {
         Button finishSetupButton = UIHelper.createButton("Finish Setting Up Your Account", e -> {
             new FinishSettingUpAccountPage(stage, user).show();
         });
+        
+        Button viewMessagesButton = UIHelper.createButton("View Help Messages", e -> {
+            try {
+				new ViewHelpMessagesPage(stage, user).show();
+			} catch (Exception e1) {}
+        });
 
         Button logoutButton = UIHelper.createButton("Logout", e -> {
             new LoginPage(stage).show();
         }, "-fx-background-color: #FF5555;");
 
         // Layout for buttons
-        HBox buttonBox = new HBox(20, generateTokenButton, manageGroupsButton, helpArticlesButton, finishSetupButton, logoutButton);
+        HBox buttonBox = new HBox(20, generateTokenButton, manageGroupsButton, helpArticlesButton, finishSetupButton, viewMessagesButton, logoutButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         // Main layout using VBox
