@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -355,6 +356,21 @@ public class DatabaseHelper {
             }
         }
         return groups;
+    }
+    
+    public List<Group> getGroupsForUser(User user) throws SQLException {
+        List<Group> userGroups = new ArrayList<>();
+        Set<Group> allGroups = getAllGroups();
+        String username = user.getUsername();
+        for (Group group : allGroups) {
+            if (group.getAdmins().contains(username) ||
+                group.getInstructorAdmins().contains(username) ||
+                group.getInstructors().contains(username) ||
+                group.getStudents().contains(username)) {
+                userGroups.add(group);
+            }
+        }
+        return userGroups;
     }
 
     /**
