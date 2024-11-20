@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.sql.SQLException;
 
 import app.User;
@@ -28,7 +27,6 @@ import app.dialog.TokenDisplayDialog;
 import app.util.DatabaseHelper;
 import app.util.Invitation;
 import app.util.UIHelper;
-import app.util.Group;
 
 /**
  * The AdminPage class represents the admin dashboard where the admin can manage users and special access groups.

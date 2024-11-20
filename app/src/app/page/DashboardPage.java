@@ -48,9 +48,14 @@ public class DashboardPage {
 
         // Logout button
         Button logoutButton = UIHelper.createButton("Logout", e -> new LoginPage(stage).show());
+        
+        // Quit Button
+        Button quitButton = UIHelper.createButton("Quit", e -> {
+            stage.close();
+        }, "-fx-background-color: #FF5555;");
 
         // Layout using VBox
-        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, logoutButton);
+        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, logoutButton, quitButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
 
