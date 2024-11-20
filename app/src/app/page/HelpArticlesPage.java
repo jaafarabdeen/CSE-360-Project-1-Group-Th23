@@ -206,7 +206,7 @@ public class HelpArticlesPage {
      */
     private List<HelpArticle> filterArticles(String keyword) {
         return allArticles.stream()
-                .filter(article -> user.hasRole("Admin") || user.hasRole("Instructor") || article.getLevel().equalsIgnoreCase(user.getContentLevelPreference()))
+                .filter(article -> user.hasRole("Admin") || user.hasRole("Instructor") || article.getLevel().equalsIgnoreCase(user.getContentLevelPreference()) || "All".equalsIgnoreCase(user.getContentLevelPreference()))
                 .filter(article -> keyword == null || keyword.isEmpty() ||
                         article.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
                         article.getDescription().toLowerCase().contains(keyword.toLowerCase()) ||

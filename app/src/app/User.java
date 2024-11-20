@@ -31,7 +31,6 @@ public class User {
     private Map<String, String> topics; // topic -> level
     private Set<String> roles;
     private String level; // Beginner, Intermediate, Advanced, Expert
-    private List<String> messages; // New field for messages
     private List<String> searchRequests; // New field for search requests
     private String contentLevelPreference; // New field for content level preference
 
@@ -45,7 +44,6 @@ public class User {
         this.oneTimePasswordFlag = false;
         this.topics = new HashMap<>();
         this.level = "Intermediate"; // Default level
-        this.messages = new ArrayList<>(); // Initialize messages
         this.searchRequests = new ArrayList<>(); // Initialize search requests
         this.contentLevelPreference = "All"; // Default content level preference
     }
