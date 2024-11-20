@@ -479,37 +479,6 @@ public class DatabaseHelper {
             // Implementation omitted for brevity
         }
     }
-    
-    /**
-     * Retrieves an article by its ID.
-     *
-     * @param id The ID of the article.
-     * @return The HelpArticle object, or null if not found.
-     * @throws SQLException if an error occurs during article retrieval.
-     */
-    public HelpArticle getArticle(long id) throws SQLException {
-        String query = "SELECT * FROM help_articles WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setLong(1, id);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    HelpArticle article = new HelpArticle(
-                            rs.getLong("id"),
-                            rs.getString("title"),
-                            rs.getString("description"),
-                            rs.getString("body"),
-                            rs.getString("level"),
-                            new HashSet<>(Set.of(rs.getString("keywords").split(","))),
-                            new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
-                            rs.getString("author_username"),
-                            rs.getString("group_name")
-                    );
-                    return article;
-                }
-            }
-        }
-        return null;
-    }
 
     /**
      * Retrieves an article by its ID.
@@ -527,10 +496,12 @@ public class DatabaseHelper {
                 if (rs.next()) {
                     String groupName = rs.getString("group_name");
                     String body = rs.getString("body");
+                    boolean isEncrypted = groupName != null;
+                    boolean hasAccess = true;
 
                     if (groupName != null) {
                         // Article is in a special access group
-                        Group group = getGroup(groupName);
+                        Group group = getGroup(groupName); // Use getGroup instead of getGroupByName
                         if (group == null) {
                             // Group not found, deny access
                             return null;
@@ -561,7 +532,8 @@ public class DatabaseHelper {
                             new HashSet<>(Set.of(rs.getString("keywords").split(","))),
                             new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
                             rs.getString("author_username"),
-                            groupName
+                            groupName,
+                            isEncrypted // Include the isEncrypted parameter
                     );
                     return article;
                 }
@@ -569,33 +541,6 @@ public class DatabaseHelper {
         }
         return null;
     }
-
-    /**
-     * Checks if a user has access to view the body of articles in a group.
-     *
-     * @param user The user requesting access.
-     * @param group The group in question.
-     * @return True if the user has access, false otherwise.
-     */
-    public boolean hasAccessToGroupArticle(User user, Group group) {
-        String username = user.getUsername();
-
-        if (group.getAdmins().contains(username)) {
-            return true;
-        }
-        if (group.getInstructorAdmins().contains(username)) {
-            return true;
-        }
-        if (group.getInstructors().contains(username)) {
-            return true;
-        }
-        if (group.getStudents().contains(username)) {
-            return true;
-        }
-        return false;
-    }
-
-    // Modify getAllArticles to take User parameter and filter articles based on access
 
     /**
      * Retrieves all articles accessible to the user.
@@ -612,11 +557,12 @@ public class DatabaseHelper {
             while (rs.next()) {
                 String groupName = rs.getString("group_name");
                 String body = rs.getString("body");
+                boolean isEncrypted = groupName != null;
                 boolean hasAccess = true;
 
                 if (groupName != null) {
                     // Article is in a special access group
-                    Group group = getGroup(groupName);
+                    Group group = getGroup(groupName); // Use getGroup instead of getGroupByName
                     if (group == null) {
                         // Group not found, deny access
                         hasAccess = false;
@@ -646,13 +592,52 @@ public class DatabaseHelper {
                             new HashSet<>(Set.of(rs.getString("keywords").split(","))),
                             new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
                             rs.getString("author_username"),
-                            groupName
+                            groupName,
+                            isEncrypted // Include the isEncrypted parameter
                     );
                     articles.add(article);
                 }
             }
         }
         return articles;
+    }
+
+    // Add this method if getGroupByName is being called elsewhere
+    /**
+     * Retrieves a group by its name.
+     *
+     * @param name The name of the group.
+     * @return The Group object, or null if not found.
+     * @throws SQLException if an error occurs during group retrieval.
+     */
+    public Group getGroupByName(String name) throws SQLException {
+        // Since getGroup(String name) already exists, we can simply call it
+        return getGroup(name);
+    }
+
+    /**
+     * Checks if a user has access to view the body of articles in a group.
+     *
+     * @param user The user requesting access.
+     * @param group The group in question.
+     * @return True if the user has access, false otherwise.
+     */
+    public boolean hasAccessToGroupArticle(User user, Group group) {
+        String username = user.getUsername();
+
+        if (group.getAdmins().contains(username)) {
+            return true;
+        }
+        if (group.getInstructorAdmins().contains(username)) {
+            return true;
+        }
+        if (group.getInstructors().contains(username)) {
+            return true;
+        }
+        if (group.getStudents().contains(username)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -667,35 +652,6 @@ public class DatabaseHelper {
             pstmt.setLong(1, id);
             pstmt.executeUpdate();
         }
-    }
-
-    /**
-     * Retrieves all articles from the database.
-     *
-     * @return A collection of HelpArticle objects.
-     * @throws SQLException if an error occurs during article retrieval.
-     */
-    public Collection<HelpArticle> getAllArticles() throws SQLException {
-        String query = "SELECT * FROM help_articles";
-        Collection<HelpArticle> articles = new ArrayList<>();
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                HelpArticle article = new HelpArticle(
-                        rs.getLong("id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getString("body"),
-                        rs.getString("level"),
-                        new HashSet<>(Set.of(rs.getString("keywords").split(","))),
-                        new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
-                        rs.getString("author_username"),
-                        rs.getString("group_name")
-                );
-                articles.add(article);
-            }
-        }
-        return articles;
     }
     
     /**

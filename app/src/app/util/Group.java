@@ -3,6 +3,8 @@ package app.util;
 import java.util.Set;
 import java.util.HashSet;
 
+import app.User;
+
 /**
  * The Group class represents a special access group in the application.
  * Each group has a name, a list of admins, instructors, instructor admins, students, and articles.
@@ -61,11 +63,20 @@ public class Group {
     }
 
     public void removeAdmin(String username) {
-        admins.remove(username);
+        if (admins.contains(username)) {
+            if (admins.size() == 1) {
+                throw new IllegalStateException("Cannot remove the last admin from the group.");
+            } else {
+                admins.remove(username);
+            }
+        }
     }
 
     public void addInstructor(String username) {
         instructors.add(username);
+        if (instructorAdmins.isEmpty()) {
+            addInstructorAdmin(username); // First instructor gets admin rights
+        }
     }
 
     public void removeInstructor(String username) {
@@ -77,7 +88,13 @@ public class Group {
     }
 
     public void removeInstructorAdmin(String username) {
-        instructorAdmins.remove(username);
+        if (instructorAdmins.contains(username)) {
+            if (instructorAdmins.size() == 1) {
+                throw new IllegalStateException("Cannot remove the last instructor admin from the group.");
+            } else {
+                instructorAdmins.remove(username);
+            }
+        }
     }
 
     public void addStudent(String username) {
@@ -94,5 +111,11 @@ public class Group {
 
     public void removeArticleId(Long articleId) {
         articleIds.remove(articleId);
+    }
+
+    // New method to check if user can view decrypted body
+    public boolean canUserViewDecryptedBody(User user) {
+        String username = user.getUsername();
+        return admins.contains(username) || instructorAdmins.contains(username) || instructors.contains(username) || students.contains(username);
     }
 }

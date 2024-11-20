@@ -1,6 +1,7 @@
 package app;
 
 import java.util.Set;
+import app.util.Group;
 import java.util.HashSet;
 
 /**
@@ -24,13 +25,15 @@ public class HelpArticle {
     private String groupName; // null if not in any special access group
     private final String authorUsername;
     private Set<String> referenceLinks;
+    private boolean isEncrypted; // New field to indicate if the article is encrypted
 
     // Constructor for creating a new article
-    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> referenceLinks, String authorUsername, String groupName) {
-        this(0, title, description, body, level, keywords, referenceLinks, authorUsername, groupName);
+    public HelpArticle(String title, String description, String body, String level, Set<String> keywords, Set<String> referenceLinks, String authorUsername, String groupName, boolean isEncrypted) {
+        this(0, title, description, body, level, keywords, referenceLinks, authorUsername, groupName, isEncrypted);
     }
 
-    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> referenceLinks, String authorUsername, String groupName) {
+    // Updated constructor to include isEncrypted parameter
+    public HelpArticle(long id, String title, String description, String body, String level, Set<String> keywords, Set<String> referenceLinks, String authorUsername, String groupName, boolean isEncrypted) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -40,6 +43,7 @@ public class HelpArticle {
         this.referenceLinks = referenceLinks;
         this.authorUsername = authorUsername;
         this.groupName = groupName;
+        this.isEncrypted = isEncrypted; // Initialize the new field
     }
 
     // Setters for all fields except immutable fields like authorUsername
@@ -68,8 +72,29 @@ public class HelpArticle {
         this.description = description;
     }
 
+    // Updated getBody method to handle encryption
     public String getBody() {
         return body;
+    }
+
+    // New method to get decrypted body based on user access
+    public String getDecryptedBody(User user, Group group) {
+        if (isEncrypted) {
+            // Check if user has rights to decrypt
+            if (group != null && group.canUserViewDecryptedBody(user)) {
+                return decryptBody(body);
+            } else {
+                return "You do not have access to view this article body.";
+            }
+        } else {
+            return body;
+        }
+    }
+
+    // Placeholder for decryption logic
+    private String decryptBody(String encryptedBody) {
+        // Implement decryption logic here
+        return encryptedBody; // For now, just return as is
     }
 
     public void setBody(String body) {
@@ -110,5 +135,13 @@ public class HelpArticle {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public boolean isEncrypted() {
+        return isEncrypted;
+    }
+
+    public void setEncrypted(boolean isEncrypted) {
+        this.isEncrypted = isEncrypted;
     }
 }

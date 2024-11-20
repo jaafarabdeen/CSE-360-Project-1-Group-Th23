@@ -57,14 +57,15 @@ public class HelpArticlesPage {
             e.printStackTrace();
         }
         this.databaseHelper = tempDatabaseHelper;
-        this.allArticles = new ArrayList<>(HelpArticleDatabase.getArticles());
+        // Pass the user to getArticles method
+        this.allArticles = new ArrayList<>(HelpArticleDatabase.getArticles(user));
     }
 
     /**
      * Displays the help articles UI and handles user interactions.
      */
     public void show() {
-    	stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
+        stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
         // Title label
         Label titleLabel = new Label("Help Articles");
         titleLabel.getStyleClass().add("label-title");
@@ -135,7 +136,7 @@ public class HelpArticlesPage {
                             databaseHelper.restoreArticles(file.getAbsolutePath(), merge, group.isEmpty() ? null : group);
                             // Reload articles from the database after restore
                             allArticles.clear();
-                            allArticles.addAll(HelpArticleDatabase.getArticles());
+                            allArticles.addAll(HelpArticleDatabase.getArticles(user));
                             // Refresh ListView with the updated articles
                             articlesListView.getItems().setAll(filterArticles(searchField.getText()));
                         } catch (Exception ex) {
@@ -205,7 +206,7 @@ public class HelpArticlesPage {
      */
     private List<HelpArticle> filterArticles(String keyword) {
         return allArticles.stream()
-                .filter(article -> article.getLevel().equalsIgnoreCase(user.getLevel()) || user.hasRole("Admin") || user.hasRole("Instructor"))
+                .filter(article -> user.hasRole("Admin") || user.hasRole("Instructor") || article.getLevel().equalsIgnoreCase(user.getContentLevelPreference()))
                 .filter(article -> keyword == null || keyword.isEmpty() ||
                         article.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
                         article.getDescription().toLowerCase().contains(keyword.toLowerCase()) ||

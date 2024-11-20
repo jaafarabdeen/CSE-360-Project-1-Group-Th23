@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The User class represents a user account in the application.
@@ -29,6 +31,9 @@ public class User {
     private Map<String, String> topics; // topic -> level
     private Set<String> roles;
     private String level; // Beginner, Intermediate, Advanced, Expert
+    private List<String> messages; // New field for messages
+    private List<String> searchRequests; // New field for search requests
+    private String contentLevelPreference; // New field for content level preference
 
     public User(String username, String password, String role) {
         this.username = username;
@@ -40,6 +45,9 @@ public class User {
         this.oneTimePasswordFlag = false;
         this.topics = new HashMap<>();
         this.level = "Intermediate"; // Default level
+        this.messages = new ArrayList<>(); // Initialize messages
+        this.searchRequests = new ArrayList<>(); // Initialize search requests
+        this.contentLevelPreference = "All"; // Default content level preference
     }
 
     /**
@@ -172,6 +180,24 @@ public class User {
      */
     public void setLevel(String level) {
         this.level = level;
+    }
+
+    // New methods for search requests
+    public void addSearchRequest(String searchRequest) {
+        searchRequests.add(searchRequest);
+    }
+
+    public List<String> getSearchRequests() {
+        return searchRequests;
+    }
+
+    // New methods for content level preference
+    public void setContentLevelPreference(String level) {
+        this.contentLevelPreference = level;
+    }
+
+    public String getContentLevelPreference() {
+        return contentLevelPreference;
     }
 
     @Override

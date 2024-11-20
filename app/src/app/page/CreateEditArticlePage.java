@@ -57,6 +57,8 @@ public class CreateEditArticlePage {
      * Displays the create/edit article UI and handles user interactions.
      */
     public void show() {
+        stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
+
         // Title label
         Label titleLabel = new Label(article == null ? "Create New Article" : "Edit Article");
         titleLabel.getStyleClass().add("label-title");
@@ -107,7 +109,6 @@ public class CreateEditArticlePage {
             if (article.getGroupName() != null) {
                 groupChoiceBox.setValue(article.getGroupName());
             } else {
-            	levelChoiceBox.setValue("Beginner");
                 groupChoiceBox.setValue("None");
             }
         }
@@ -119,7 +120,7 @@ public class CreateEditArticlePage {
             String body = bodyArea.getText();
             String level = levelChoiceBox.getValue();
 
-            if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level.isEmpty()) {
+            if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level == null || level.isEmpty()) {
                 UIHelper.setMessage(messageLabel, "Please fill in the required fields.", true);
             } else {
                 Set<String> keywords = parseInputToSet(keywordsField.getText());
@@ -129,9 +130,11 @@ public class CreateEditArticlePage {
                     groupName = null;
                 }
 
+                boolean isEncrypted = groupName != null;
+
                 if (article == null) {
                     // Create new article
-                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, referenceLinks, groupName, user.getUsername());
+                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, referenceLinks, user.getUsername(), groupName, isEncrypted);
                     try {
                         databaseHelper.registerArticle(newArticle);
                     } catch (Exception ex) {
@@ -146,6 +149,7 @@ public class CreateEditArticlePage {
                     article.setKeywords(keywords);
                     article.setReferenceLinks(referenceLinks);
                     article.setGroupName(groupName);
+                    article.setEncrypted(isEncrypted);
                     try {
                         databaseHelper.updateArticle(article);
                     } catch (Exception ex) {
@@ -181,8 +185,10 @@ public class CreateEditArticlePage {
      */
     private Set<String> parseInputToSet(String input) {
         Set<String> result = new HashSet<>();
-        for (String item : input.split(",")) {
-            result.add(item.trim());
+        if (input != null && !input.trim().isEmpty()) {
+            for (String item : input.split(",")) {
+                result.add(item.trim());
+            }
         }
         return result;
     }
