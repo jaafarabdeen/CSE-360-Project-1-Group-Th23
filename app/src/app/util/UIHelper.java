@@ -3,6 +3,8 @@ package app.util;
 import javafx.animation.ScaleTransition;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -18,6 +20,8 @@ import javafx.util.Duration;
  */
 public class UIHelper {
 	
+	private static final String STYLESHEET_PATH = UIHelper.class.getResource("styles.css").toExternalForm();
+	
 	/**
      * Creates a Scene with the specified root and applies the main stylesheet.
      * 
@@ -28,8 +32,25 @@ public class UIHelper {
      */
     public static Scene createStyledScene(Parent root, double width, double height) {
         Scene scene = new Scene(root, width, height);
-        scene.getStylesheets().add(UIHelper.class.getResource("styles.css").toExternalForm());
+        scene.getStylesheets().add(STYLESHEET_PATH);
         return scene;
+    }
+    
+    /**
+     * Creates a ScaleTransition animation for scaling a Button to the specified X and Y values.
+     * This method is used internally for creating consistent animations with different scales and durations.
+     *
+     * @param button         the Button to animate
+     * @param toX            the X-axis scaling factor to scale the button to (1.0 is default size)
+     * @param toY            the Y-axis scaling factor to scale the button to (1.0 is default size)
+     * @param durationMillis the duration of the scaling animation in milliseconds
+     * @return               a ScaleTransition object configured for the specified parameters
+     */
+    private static ScaleTransition createScaleTransition(Button button, double toX, double toY, int durationMillis) {
+        ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(durationMillis), button);
+        scaleTransition.setToX(toX);
+        scaleTransition.setToY(toY);
+        return scaleTransition;
     }
 
     /**
@@ -62,33 +83,15 @@ public class UIHelper {
      * @param button the Button to apply animations to
      */
     public static void applyButtonAnimations(Button button) {
-        button.setOnMouseEntered(e -> {
-            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), button);
-            scaleUp.setToX(1.05);
-            scaleUp.setToY(1.05);
-            scaleUp.play();
-        });
+        ScaleTransition scaleUp = createScaleTransition(button, 1.05, 1.05, 200);
+        ScaleTransition scaleDown = createScaleTransition(button, 1, 1, 200);
+        ScaleTransition scalePressed = createScaleTransition(button, 0.98, 0.98, 100);
+        ScaleTransition scaleReleased = createScaleTransition(button, 1, 1, 100);
 
-        button.setOnMouseExited(e -> {
-            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), button);
-            scaleDown.setToX(1);
-            scaleDown.setToY(1);
-            scaleDown.play();
-        });
-
-        button.setOnMousePressed(e -> {
-            ScaleTransition scalePressed = new ScaleTransition(Duration.millis(100), button);
-            scalePressed.setToX(0.98);
-            scalePressed.setToY(0.98);
-            scalePressed.play();
-        });
-
-        button.setOnMouseReleased(e -> {
-            ScaleTransition scaleReleased = new ScaleTransition(Duration.millis(100), button);
-            scaleReleased.setToX(1);
-            scaleReleased.setToY(1);
-            scaleReleased.play();
-        });
+        button.setOnMouseEntered(e -> scaleUp.play());
+        button.setOnMouseExited(e -> scaleDown.play());
+        button.setOnMousePressed(e -> scalePressed.play());
+        button.setOnMouseReleased(e -> scaleReleased.play());
     }
     
     public static Label createMessageLabel() {
@@ -153,5 +156,33 @@ public class UIHelper {
         textArea.getStyleClass().add("text-area");
         return textArea;
     }
+    
+    /**
+     * Shows an error dialog with the specified title and message.
+     * 
+     * @param title The title of the dialog.
+     * @param message The message content of the dialog.
+     */
+    public static void showErrorDialog(String title, String message) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(message);
+        alert.showAndWait();
+    }
+    
+    /**
+     * Displays an information dialog with the specified title and message.
+     *
+     * @param title   The title of the dialog.
+     * @param message The message content of the dialog.
+     */
+    public static void showInfoDialog(String title, String message) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 }
 

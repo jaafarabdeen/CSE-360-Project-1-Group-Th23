@@ -51,6 +51,7 @@ public class LoginPage {
      */
     public void show() {
         // Title label with welcome message
+    	stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
         Label titleLabel = new Label("Welcome!");
         titleLabel.getStyleClass().add("label-title");
 

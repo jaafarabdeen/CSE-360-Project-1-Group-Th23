@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import app.User;
 import app.util.UIHelper;
 import javafx.geometry.Insets;
@@ -45,12 +46,47 @@ public class DashboardPage {
 
         // Help Articles button
         Button helpArticlesButton = UIHelper.createButton("Help Articles", e -> new HelpArticlesPage(stage, user).show());
+        
+        // Send Generic Message Button
+        Button sendGenericMessageButton = UIHelper.createButton("Send Generic Message", e -> {
+            try {
+				new SendMessagePage(stage, user, "Generic").show();
+			} catch (Exception e1) {}
+        });
+
+        // Send Specific Message Button
+        Button sendSpecificMessageButton = UIHelper.createButton("Send Specific Message", e -> {
+            try {
+				new SendMessagePage(stage, user, "Specific").show();
+			} catch (Exception e1) {}
+        });
+        
+        Button viewMessagesButton = UIHelper.createButton("View Help Messages", e -> {
+            try {
+				new ViewHelpMessagesPage(stage, user).show();
+			} catch (Exception e1) {}
+        });
+
+        HBox messageButtonBox = null;
+        if(!user.hasRole("Instructor")) {
+	        // Layout for message buttons
+        	messageButtonBox = new HBox(20, sendGenericMessageButton, sendSpecificMessageButton);
+	        messageButtonBox.setAlignment(Pos.CENTER);
+        } else {
+        	messageButtonBox = new HBox(20, viewMessagesButton);
+	        messageButtonBox.setAlignment(Pos.CENTER);
+        }
 
         // Logout button
         Button logoutButton = UIHelper.createButton("Logout", e -> new LoginPage(stage).show());
+        
+        // Quit Button
+        Button quitButton = UIHelper.createButton("Quit", e -> {
+            stage.close();
+        }, "-fx-background-color: #FF5555;");
 
         // Layout using VBox
-        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, logoutButton);
+        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, messageButtonBox, logoutButton, quitButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
 

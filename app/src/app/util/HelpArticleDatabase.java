@@ -4,6 +4,7 @@ import java.util.Collection;
 import app.HelpArticle;
 
 import java.sql.SQLException;
+import app.User;
 
 /**
  * The HelpArticleDatabase class serves as a database interface for help articles.
@@ -38,15 +39,16 @@ public class HelpArticleDatabase {
     }
 
     /**
-     * Retrieves an article by its ID.
+     * Retrieves an article by its ID for the specified user.
      * 
-     * @param id The ID of the article.
-     * @return The HelpArticle object, or null if not found.
+     * @param id   The ID of the article.
+     * @param user The user requesting the article.
+     * @return The HelpArticle object, or null if not found or access denied.
      */
-    public static HelpArticle getArticle(long id) {
+    public static HelpArticle getArticle(long id, User user) {
         try {
-            return databaseHelper.getArticle(id);
-        } catch (SQLException e) {
+            return databaseHelper.getArticle(id, user);
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -79,14 +81,15 @@ public class HelpArticleDatabase {
     }
 
     /**
-     * Retrieves all articles.
+     * Retrieves all articles accessible to the specified user.
      * 
-     * @return A collection of all help articles.
+     * @param user The user requesting the articles.
+     * @return A collection of accessible help articles.
      */
-    public static Collection<HelpArticle> getArticles() {
+    public static Collection<HelpArticle> getArticles(User user) {
         try {
-            return databaseHelper.getAllArticles();
-        } catch (SQLException e) {
+            return databaseHelper.getAllArticles(user);
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

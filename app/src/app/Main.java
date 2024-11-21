@@ -2,6 +2,9 @@ package app;
 
 import app.page.LoginPage;
 import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 /**
@@ -15,7 +18,19 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Initialize and display the login page
+            // Set up initial root with background color to prevent white flashes
+            VBox root = new VBox();
+            root.setStyle("-fx-background-color: #2e3440;");
+            
+            // Create a single scene and set the scene background color directly
+            Scene scene = new Scene(root, 1920, 1080);
+            scene.setFill(Color.web("#2e3440"));
+
+            // Set the scene to the primary stage
+            primaryStage.setScene(scene);
+            primaryStage.show();
+
+            // Initialize and display the login page by updating the root node
             LoginPage loginPage = new LoginPage(primaryStage);
             loginPage.show();
         } catch (Exception e) {

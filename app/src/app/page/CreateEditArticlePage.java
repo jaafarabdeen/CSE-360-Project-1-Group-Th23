@@ -6,20 +6,26 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 import app.HelpArticle;
 import app.User;
-import app.util.HelpArticleDatabase;
 import app.util.UIHelper;
+import app.util.DatabaseHelper;
+import app.util.Group;
 
 /**
  * The CreateEditArticlePage class allows admins and instructors to create or edit help articles.
  * Users can enter all the necessary fields and save the article to the database.
+ * For articles in special access groups, the body will be encrypted.
  * 
  * Author:
  *     - Jaafar Abdeen
@@ -31,17 +37,28 @@ public class CreateEditArticlePage {
     private final Stage stage;
     private final User user;
     private final HelpArticle article; // null if creating a new article
+    private final DatabaseHelper databaseHelper;
 
     public CreateEditArticlePage(Stage stage, User user, HelpArticle article) {
         this.stage = stage;
         this.user = user;
         this.article = article;
+        DatabaseHelper tempDatabaseHelper = null;
+        try {
+            tempDatabaseHelper = new DatabaseHelper();
+            tempDatabaseHelper.connectToDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.databaseHelper = tempDatabaseHelper;
     }
 
     /**
      * Displays the create/edit article UI and handles user interactions.
      */
     public void show() {
+        stage.setOnCloseRequest(event -> databaseHelper.closeConnection());
+
         // Title label
         Label titleLabel = new Label(article == null ? "Create New Article" : "Edit Article");
         titleLabel.getStyleClass().add("label-title");
@@ -59,13 +76,24 @@ public class CreateEditArticlePage {
         TextField keywordsField = UIHelper.createTextField("KEYWORDS (comma-separated)");
 
         // Level field
-        TextField levelField = UIHelper.createTextField("LEVEL (Beginner, Intermediate, Advanced, Expert)");
-
-        // Groups field
-        TextField groupsField = UIHelper.createTextField("GROUPS (comma-separated)");
+        ChoiceBox<String> levelChoiceBox = new ChoiceBox<>();
+        levelChoiceBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert");
 
         // Reference Links field
         TextArea referenceLinksArea = UIHelper.createTextArea("REFERENCE LINKS (comma-separated)", 800, 100);
+
+        // Special Access Group ChoiceBox
+        ChoiceBox<String> groupChoiceBox = new ChoiceBox<>();
+        groupChoiceBox.getItems().add("None");
+        try {
+            List<Group> groups = new ArrayList<>(databaseHelper.getAllGroups());
+            for (Group g : groups) {
+                groupChoiceBox.getItems().add(g.getName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        groupChoiceBox.setValue("None");
 
         // Message label for error messages
         Label messageLabel = UIHelper.createMessageLabel();
@@ -76,9 +104,13 @@ public class CreateEditArticlePage {
             descriptionArea.setText(article.getDescription());
             bodyArea.setText(article.getBody());
             keywordsField.setText(String.join(", ", article.getKeywords()));
-            levelField.setText(article.getLevel());
-            groupsField.setText(String.join(", ", article.getGroups()));
+            levelChoiceBox.setValue(article.getLevel());
             referenceLinksArea.setText(String.join(", ", article.getReferenceLinks()));
+            if (article.getGroupName() != null) {
+                groupChoiceBox.setValue(article.getGroupName());
+            } else {
+                groupChoiceBox.setValue("None");
+            }
         }
 
         // Save button
@@ -86,19 +118,28 @@ public class CreateEditArticlePage {
             String title = titleField.getText();
             String description = descriptionArea.getText();
             String body = bodyArea.getText();
-            String level = levelField.getText();
+            String level = levelChoiceBox.getValue();
 
-            if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level.isEmpty()) {
+            if (title.isEmpty() || description.isEmpty() || body.isEmpty() || level == null || level.isEmpty()) {
                 UIHelper.setMessage(messageLabel, "Please fill in the required fields.", true);
             } else {
                 Set<String> keywords = parseInputToSet(keywordsField.getText());
-                Set<String> groups = parseInputToSet(groupsField.getText());
                 Set<String> referenceLinks = parseInputToSet(referenceLinksArea.getText());
+                String groupName = groupChoiceBox.getValue();
+                if ("None".equals(groupName)) {
+                    groupName = null;
+                }
+
+                boolean isEncrypted = groupName != null;
 
                 if (article == null) {
                     // Create new article
-                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, groups, referenceLinks, user.getUsername());
-                    HelpArticleDatabase.addArticle(newArticle);
+                    HelpArticle newArticle = new HelpArticle(title, description, body, level, keywords, referenceLinks, user.getUsername(), groupName, isEncrypted);
+                    try {
+                        databaseHelper.registerArticle(newArticle);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 } else {
                     // Update existing article
                     article.setTitle(title);
@@ -106,9 +147,14 @@ public class CreateEditArticlePage {
                     article.setBody(body);
                     article.setLevel(level);
                     article.setKeywords(keywords);
-                    article.setGroups(groups);
                     article.setReferenceLinks(referenceLinks);
-                    HelpArticleDatabase.updateArticle(article);
+                    article.setGroupName(groupName);
+                    article.setEncrypted(isEncrypted);
+                    try {
+                        databaseHelper.updateArticle(article);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
 
                 // Return to help articles page
@@ -120,7 +166,7 @@ public class CreateEditArticlePage {
         Button backButton = UIHelper.createButton("Back", e -> new HelpArticlesPage(stage, user).show());
 
         // Layout using VBox
-        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelField, groupsField, referenceLinksArea, saveButton, backButton, messageLabel);
+        VBox vBox = new VBox(20, titleLabel, titleField, descriptionArea, bodyArea, keywordsField, levelChoiceBox, groupChoiceBox, referenceLinksArea, saveButton, backButton, messageLabel);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
 
@@ -139,8 +185,10 @@ public class CreateEditArticlePage {
      */
     private Set<String> parseInputToSet(String input) {
         Set<String> result = new HashSet<>();
-        for (String item : input.split(",")) {
-            result.add(item.trim());
+        if (input != null && !input.trim().isEmpty()) {
+            for (String item : input.split(",")) {
+                result.add(item.trim());
+            }
         }
         return result;
     }
