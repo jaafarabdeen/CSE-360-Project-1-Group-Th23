@@ -2,6 +2,7 @@ package app.util;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -726,52 +727,90 @@ public class DatabaseHelper {
     }
     
     /**
-     * Backs up articles to a specified backup file.
+     * Backs up all articles to a specified file, encrypting the entire file.
      *
      * @param fileName The name of the backup file.
-     * @throws SQLException if an error occurs during article backup.
-     * @throws IOException  if an error occurs during file writing.
+     * @throws Exception if an error occurs during the backup process.
      */
-    public void backupArticles(String fileName) throws SQLException, IOException, Exception {
+    public void backupArticles(String fileName) throws Exception {
+        List<HelpArticle> articles = new ArrayList<>();
         String query = "SELECT * FROM help_articles";
+
+        // Retrieve all articles from the database
         try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(query);
-             FileWriter writer = new FileWriter(fileName)) {
-
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                String articleData = rs.getString("title") + "§" + rs.getString("description") + "§" +
-                                     rs.getString("body") + "§" + rs.getString("level") + "§" +
-                                     rs.getString("keywords") + "§" +
-                                     rs.getString("reference_links") + "§" +
-                                     rs.getString("author_username") + "§" +
-                                     rs.getString("group_name");
-
-                // Generate a random IV
-                byte[] iv = new byte[16];
-                SecureRandom random = new SecureRandom();
-                random.nextBytes(iv);
-
-                // Encrypt the article data with the random IV
-                byte[] encryptedData = encryptionHelper.encrypt(articleData.getBytes(StandardCharsets.UTF_8), iv);
-
-                // Encode IV and encrypted data to Base64 and store them in the backup file
-                String encodedIv = Base64.getEncoder().encodeToString(iv);
-                String encodedData = Base64.getEncoder().encodeToString(encryptedData);
-                writer.write(encodedIv + "," + encodedData + "\n");
+                HelpArticle article = new HelpArticle(
+                        rs.getLong("id"),
+                        rs.getString("title"),
+                        rs.getString("description"),
+                        rs.getString("body"),
+                        rs.getString("level"),
+                        new HashSet<>(Set.of(rs.getString("keywords").split(","))),
+                        new HashSet<>(Set.of(rs.getString("reference_links").split(","))),
+                        rs.getString("author_username"),
+                        rs.getString("group_name"), // Group name can be null
+                        rs.getString("group_name") != null // Is encrypted if part of a group
+                );
+                articles.add(article);
             }
+        }
+
+        // Serialize articles into a single string
+        StringBuilder serializedData = new StringBuilder();
+        for (HelpArticle article : articles) {
+            serializedData.append(article.getId()).append("§")
+                    .append(article.getTitle()).append("§")
+                    .append(article.getDescription()).append("§")
+                    .append(article.getBody()).append("§")
+                    .append(article.getLevel()).append("§")
+                    .append(String.join(",", article.getKeywords())).append("§")
+                    .append(String.join(",", article.getReferenceLinks())).append("§")
+                    .append(article.getAuthorUsername()).append("§")
+                    .append(article.getGroupName() == null ? "null" : article.getGroupName()) // Handle null group names
+                    .append("\n");
+        }
+
+        // Encrypt the serialized data
+        byte[] iv = new byte[16];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+        byte[] encryptedData = encryptionHelper.encrypt(serializedData.toString().getBytes(StandardCharsets.UTF_8), iv);
+
+        // Write the IV and encrypted data to the file
+        try (FileWriter writer = new FileWriter(fileName)) {
+            String encodedIv = Base64.getEncoder().encodeToString(iv);
+            String encodedData = Base64.getEncoder().encodeToString(encryptedData);
+            writer.write(encodedIv + "\n" + encodedData);
         }
     }
 
     /**
-     * Restores articles from a specified backup file.
+     * Restores articles from an encrypted backup file.
      *
      * @param fileName The name of the backup file.
      * @param merge If true, merges backup entries with current entries; otherwise, deletes current entries before restoring.
      * @param group The group name to filter by; if null, restores all articles.
-     * @throws SQLException if an error occurs during article restoration.
-     * @throws IOException if an error occurs during file reading.
+     * @throws Exception if an error occurs during the restore process.
      */
-    public void restoreArticles(String fileName, boolean merge, String group) throws SQLException, IOException, Exception {
+    public void restoreArticles(String fileName, boolean merge, String group) throws Exception {
+        String encodedIv;
+        String encodedData;
+
+        // Read the IV and encrypted data from the file
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            encodedIv = reader.readLine();
+            encodedData = reader.readLine();
+        }
+
+        // Decode and decrypt the data
+        byte[] iv = Base64.getDecoder().decode(encodedIv);
+        byte[] encryptedData = Base64.getDecoder().decode(encodedData);
+        byte[] decryptedData = encryptionHelper.decrypt(encryptedData, iv);
+
+        // Deserialize the decrypted data
+        String[] articlesData = new String(decryptedData, StandardCharsets.UTF_8).split("\n");
+
         if (!merge) {
             String clearQuery = "DELETE FROM help_articles";
             try (Statement stmt = connection.createStatement()) {
@@ -779,43 +818,32 @@ public class DatabaseHelper {
             }
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",", 2); // Separate IV and encrypted data
-                if (parts.length != 2) continue;
+        // Insert each article into the database, filtering by group if specified
+        for (String articleData : articlesData) {
+            String[] fields = articleData.split("§", 9);
+            if (fields.length != 9) continue;
 
-                byte[] iv = Base64.getDecoder().decode(parts[0]);
-                byte[] encryptedData = Base64.getDecoder().decode(parts[1]);
+            String articleGroupName = fields[8].equals("null") ? null : fields[8]; // Interpret "null" as actual null
 
-                // Decrypt article data using the extracted IV
-                byte[] decryptedData = encryptionHelper.decrypt(encryptedData, iv);
+            // Check if the article should be restored based on the group filter
+            if (group != null && (articleGroupName == null || !group.equals(articleGroupName))) {
+                continue; // Skip articles not in the specified group
+            }
 
-                String articleData = new String(decryptedData, StandardCharsets.UTF_8);
-                String[] fields = articleData.split("§", 8);
-
-                if (fields.length != 8) continue;
-
-                // Check if the article belongs to the specified group (if group filtering is enabled)
-                String articleGroupName = fields[7];
-                if (group != null && !group.equals(articleGroupName)) {
-                    continue; // Skip articles not in the specified group
-                }
-
-                // Insert the article into the database if it doesn't exist already (use title for uniqueness in this example)
-                if (!merge || !doesArticleExist(fields[0])) {
-                    String insertArticle = "INSERT INTO help_articles (title, description, body, level, keywords, reference_links, author_username, group_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                    try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
-                        pstmt.setString(1, fields[0]);
-                        pstmt.setString(2, fields[1]);
-                        pstmt.setString(3, fields[2]);
-                        pstmt.setString(4, fields[3]);
-                        pstmt.setString(5, fields[4]);
-                        pstmt.setString(6, fields[5]);
-                        pstmt.setString(7, fields[6]);
-                        pstmt.setString(8, fields[7]);
-                        pstmt.executeUpdate();
-                    }
+            // Insert the article if it doesn't exist or if merge is false
+            if (!merge || !doesArticleExist(fields[1])) { // Check if the article exists by title
+                String insertArticle = "INSERT INTO help_articles (id, title, description, body, level, keywords, reference_links, author_username, group_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement pstmt = connection.prepareStatement(insertArticle)) {
+                    pstmt.setLong(1, Long.parseLong(fields[0]));
+                    pstmt.setString(2, fields[1]);
+                    pstmt.setString(3, fields[2]);
+                    pstmt.setString(4, fields[3]);
+                    pstmt.setString(5, fields[4]);
+                    pstmt.setString(6, fields[5]);
+                    pstmt.setString(7, fields[6]);
+                    pstmt.setString(8, fields[7]);
+                    pstmt.setString(9, articleGroupName); // Handle null group names correctly
+                    pstmt.executeUpdate();
                 }
             }
         }

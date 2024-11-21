@@ -198,7 +198,7 @@ public class HelpArticlesPage {
                     groupDialog.showAndWait().ifPresent(group -> {
                         try {
                             // Call restoreArticles with the chosen options
-                            databaseHelper.restoreArticles(file.getAbsolutePath(), merge, group.isEmpty() ? null : group);
+                            databaseHelper.restoreArticles(file.getAbsolutePath(), merge, group.isBlank() ? null : group);
                             // Reload articles from the database after restore
                             allArticles.clear();
                             allArticles.addAll(HelpArticleDatabase.getArticles(user));
