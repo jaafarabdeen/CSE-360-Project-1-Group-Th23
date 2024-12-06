@@ -88,8 +88,18 @@ public class DashboardPage {
             stage.close();
         }, "-fx-background-color: #FF5555;");
 
+        
+        // View Bookmarks button
+        Button viewBookmarksButton = UIHelper.createButton("View Bookmarks", e -> {
+            try {
+                new BookmarksPage(stage, user).show();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        });
+
         // Layout using VBox
-        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, messageButtonBox, needHelpButton, logoutButton, quitButton);
+        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, viewBookmarksButton, messageButtonBox, needHelpButton, logoutButton, quitButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
 
