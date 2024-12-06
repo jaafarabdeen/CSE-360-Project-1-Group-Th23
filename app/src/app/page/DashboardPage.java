@@ -50,32 +50,35 @@ public class DashboardPage {
         // Send Generic Message Button
         Button sendGenericMessageButton = UIHelper.createButton("Send Generic Message", e -> {
             try {
-				new SendMessagePage(stage, user, "Generic").show();
-			} catch (Exception e1) {}
+                new SendMessagePage(stage, user, "Generic").show();
+            } catch (Exception e1) {}
         });
 
         // Send Specific Message Button
         Button sendSpecificMessageButton = UIHelper.createButton("Send Specific Message", e -> {
             try {
-				new SendMessagePage(stage, user, "Specific").show();
-			} catch (Exception e1) {}
-        });
-        
-        Button viewMessagesButton = UIHelper.createButton("View Help Messages", e -> {
-            try {
-				new ViewHelpMessagesPage(stage, user).show();
-			} catch (Exception e1) {}
+                new SendMessagePage(stage, user, "Specific").show();
+            } catch (Exception e1) {}
         });
 
-        HBox messageButtonBox = null;
-        if(!user.hasRole("Instructor")) {
-	        // Layout for message buttons
-        	messageButtonBox = new HBox(20, sendGenericMessageButton, sendSpecificMessageButton);
-	        messageButtonBox.setAlignment(Pos.CENTER);
+        Button viewMessagesButton = UIHelper.createButton("View Help Messages", e -> {
+            try {
+                new ViewHelpMessagesPage(stage, user).show();
+            } catch (Exception e1) {}
+        });
+
+        HBox messageButtonBox;
+        if (!user.hasRole("Instructor")) {
+            // Layout for message buttons
+            messageButtonBox = new HBox(20, sendGenericMessageButton, sendSpecificMessageButton);
+            messageButtonBox.setAlignment(Pos.CENTER);
         } else {
-        	messageButtonBox = new HBox(20, viewMessagesButton);
-	        messageButtonBox.setAlignment(Pos.CENTER);
+            messageButtonBox = new HBox(20, viewMessagesButton);
+            messageButtonBox.setAlignment(Pos.CENTER);
         }
+
+        // Need Help? button
+        Button needHelpButton = UIHelper.createButton("Need Help?", e -> new FAQPage(stage, user).show());
 
         // Logout button
         Button logoutButton = UIHelper.createButton("Logout", e -> new LoginPage(stage).show());
@@ -86,7 +89,7 @@ public class DashboardPage {
         }, "-fx-background-color: #FF5555;");
 
         // Layout using VBox
-        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, messageButtonBox, logoutButton, quitButton);
+        VBox vBox = new VBox(40, welcomeLabel, helpArticlesButton, messageButtonBox, needHelpButton, logoutButton, quitButton);
         vBox.setAlignment(Pos.CENTER);
         vBox.setPadding(new Insets(30));
 
