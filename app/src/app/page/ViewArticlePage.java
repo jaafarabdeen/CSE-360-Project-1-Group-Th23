@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.Base64;
 
 import app.HelpArticle;
@@ -101,8 +102,31 @@ public class ViewArticlePage {
             // Back button with custom red style
             Button backButton = UIHelper.createButton("Back", e -> new HelpArticlesPage(stage, user).show(), "-fx-background-color: #FF5555; -fx-text-fill: white; -fx-font-size: 24;");
 
-            // Layout using VBox
-            VBox vBox = new VBox(20, levelLabel, titleLabel, descriptionLabel, bodyArea, linksBox, backButton);
+            // Add to Bookmarks button
+            Button addBookmarkButton = UIHelper.createButton("Add to Bookmarks", e -> {
+                try {
+                    if (!databaseHelper.isArticleBookmarked(user, article.getId())) {
+                        databaseHelper.addBookmark(user, article.getId());
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Bookmark Added");
+                        alert.setHeaderText("Article added to your bookmarks!");
+                        alert.showAndWait();
+                    } else {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Already Bookmarked");
+                        alert.setHeaderText("This article is already in your bookmarks.");
+                        alert.showAndWait();
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Failed to add bookmark. Please try again.");
+                    alert.showAndWait();
+                }
+            });
+
+            VBox vBox = new VBox(20, levelLabel, titleLabel, descriptionLabel, bodyArea, linksBox, addBookmarkButton, backButton);
             vBox.setAlignment(Pos.CENTER);
             vBox.setPadding(new Insets(30));
 

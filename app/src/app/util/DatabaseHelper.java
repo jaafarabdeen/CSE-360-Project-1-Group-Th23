@@ -117,6 +117,13 @@ public class DatabaseHelper {
                 + "search_terms VARCHAR(255), "
                 + "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
         statement.execute(messagesTable);
+        
+        String bookmarksTable = "CREATE TABLE IF NOT EXISTS bookmarks ("
+                + "username VARCHAR(255), "
+                + "article_id INT, "
+                + "PRIMARY KEY (username, article_id))";
+        statement.execute(bookmarksTable);
+        
     }
 
     /**
@@ -458,6 +465,64 @@ public class DatabaseHelper {
         String deleteGroup = "DELETE FROM groups WHERE name = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(deleteGroup)) {
             pstmt.setString(1, name);
+            pstmt.executeUpdate();
+        }
+    }
+    
+    /**
+     * Adds a bookmark for the given user and article ID.
+     */
+    public void addBookmark(User user, long articleId) throws SQLException {
+        String insertBookmark = "INSERT INTO bookmarks (username, article_id) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(insertBookmark)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setLong(2, articleId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Retrieves the IDs of all bookmarked articles for a given user.
+     */
+    public List<Long> getBookmarkedArticleIds(User user) throws SQLException {
+        List<Long> articleIds = new ArrayList<>();
+        String query = "SELECT article_id FROM bookmarks WHERE username = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, user.getUsername());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    articleIds.add(rs.getLong("article_id"));
+                }
+            }
+        }
+        return articleIds;
+    }
+
+    /**
+     * Checks if an article is already bookmarked by the user.
+     */
+    public boolean isArticleBookmarked(User user, long articleId) throws SQLException {
+        String query = "SELECT COUNT(*) AS count FROM bookmarks WHERE username = ? AND article_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setLong(2, articleId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("count") > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes a bookmark for the given user and article ID.
+     */
+    public void removeBookmark(User user, long articleId) throws SQLException {
+        String deleteBookmark = "DELETE FROM bookmarks WHERE username = ? AND article_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(deleteBookmark)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setLong(2, articleId);
             pstmt.executeUpdate();
         }
     }

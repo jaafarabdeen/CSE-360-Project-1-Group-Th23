@@ -3,6 +3,7 @@ package app.util;
 import javafx.animation.ScaleTransition;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -10,6 +11,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 /**
@@ -182,6 +185,41 @@ public class UIHelper {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    /**
+     * Creates a VBox containing an Accordion with FAQ content displayed as dropdowns.
+     *
+     * @param faqData a 2D array of FAQs, where each element is a pair of [question, answer]
+     * @return a VBox with the FAQ content
+     */
+    public static VBox createFAQContent(String[][] faqData) {
+        Accordion accordion = new Accordion();
+
+        // Create TitledPanes for each FAQ pair
+        for (String[] faq : faqData) {
+            if (faq.length == 2) { // Ensure each pair has both a question and an answer
+                TitledPane pane = new TitledPane(faq[0], createFAQItem(faq[1]));
+                accordion.getPanes().add(pane);
+            }
+        }
+
+        // Style and wrap the Accordion in a VBox
+        VBox faqBox = new VBox(10, accordion);
+        faqBox.setStyle("-fx-padding: 20;");
+        return faqBox;
+    }
+
+    /**
+     * Creates a Label styled for FAQ content.
+     *
+     * @param answer the FAQ answer
+     * @return a VBox containing the styled answer label
+     */
+    private static VBox createFAQItem(String answer) {
+        Label answerLabel = new Label(answer);
+        answerLabel.setStyle("-fx-padding: 5;");
+        return new VBox(answerLabel);
     }
 
 }

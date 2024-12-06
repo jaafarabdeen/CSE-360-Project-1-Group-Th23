@@ -261,4 +261,56 @@
     -fx-text-fill: white;
 }
 
+/* Accordion styling */
+.accordion {
+    -fx-background-color: #d8dee9;
+    -fx-border-color: #4c566a;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 10;
+}
+
+/* Accordion TitledPane styling */
+.titled-pane > .title {
+    -fx-background-color: #d4dee9;
+    -fx-text-fill: #d8dee9;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.titled-pane > .title:hover {
+    -fx-background-color: #E3dee9;
+}
+
+.titled-pane > .title:pressed {
+    -fx-background-color: #2865A2;
+    -fx-text-fill: white;
+}
+
+/* Content area inside Accordion TitledPane */
+.titled-pane > .content {
+    -fx-background-color: #d8deeF;
+    -fx-text-fill: #d8dee9;
+    -fx-padding: 10;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+/* Styling for labels inside Accordion */
+.faq-question {
+    -fx-font-size: 18px;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-padding: 5 0;
+}
+
+.faq-answer {
+    -fx-font-size: 16px;
+    -fx-text-fill: #d8dee9;
+    -fx-padding: 0 0 10 10;
+}
+
 
